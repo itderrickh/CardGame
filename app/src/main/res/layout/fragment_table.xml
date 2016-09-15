@@ -1,0 +1,191 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.itderrickh.cardgame.fragments.TableFragment">
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/imageView"
+        android:scaleType="fitXY"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:src="@drawable/tablebackground" />
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <ImageView
+            android:layout_width="40dp"
+            android:layout_height="70dp"
+            android:layout_marginRight="10dp"
+            android:id="@+id/card1"
+            android:src="@drawable/cardback"/>
+        <ImageView
+            android:layout_width="40dp"
+            android:layout_height="70dp"
+            android:id="@+id/card2"
+            android:layout_marginRight="10dp"
+            android:layout_below="@id/card1"
+            android:src="@drawable/cardback"/>
+        <ImageView
+            android:layout_width="40dp"
+            android:layout_height="70dp"
+            android:id="@+id/card3"
+            android:layout_marginRight="10dp"
+            android:layout_below="@id/card2"
+            android:src="@drawable/cardback"/>
+        <ImageView
+            android:layout_width="40dp"
+            android:layout_height="70dp"
+            android:id="@+id/card4"
+            android:layout_marginRight="10dp"
+            android:layout_below="@id/card3"
+            android:src="@drawable/cardback"/>
+        <ImageView
+            android:layout_width="40dp"
+            android:layout_height="70dp"
+            android:id="@+id/card6"
+            android:layout_marginRight="10dp"
+            android:layout_toRightOf="@id/card1"
+            android:src="@drawable/cardback"/>
+        <ImageView
+            android:layout_width="40dp"
+            android:layout_height="70dp"
+            android:id="@+id/card7"
+            android:layout_marginRight="10dp"
+            android:layout_toRightOf="@id/card2"
+            android:layout_below="@id/card6"
+            android:src="@drawable/cardback"/>
+        <ImageView
+            android:layout_width="40dp"
+            android:layout_height="70dp"
+            android:id="@+id/card8"
+            android:layout_marginRight="10dp"
+            android:layout_toRightOf="@id/card3"
+            android:layout_below="@id/card7"
+            android:src="@drawable/cardback"/>
+        <ImageView
+            android:layout_width="40dp"
+            android:layout_height="70dp"
+            android:id="@+id/card10"
+            android:layout_marginRight="10dp"
+            android:layout_toRightOf="@id/card6"
+            android:src="@drawable/cardback"/>
+        <ImageView
+            android:layout_width="40dp"
+            android:layout_height="70dp"
+            android:id="@+id/card9"
+            android:layout_marginRight="10dp"
+            android:layout_toRightOf="@id/card6"
+            android:layout_below="@id/card10"
+            android:src="@drawable/cardback"/>
+        <ImageView
+            android:layout_width="40dp"
+            android:layout_height="70dp"
+            android:id="@+id/card5"
+            android:layout_marginRight="10dp"
+            android:layout_below="@id/card9"
+            android:layout_toRightOf="@id/card8"
+            android:src="@drawable/cardback"/>
+
+        <GridLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentTop="true"
+            android:layout_toRightOf="@+id/card10"
+            android:layout_toEndOf="@+id/card10">
+
+            <TextView
+                android:layout_width="93dp"
+                android:layout_height="wrap_content"
+                android:text="Player 1"
+                android:textColor="@color/colorWhite"
+                android:id="@+id/textView"
+                android:layout_row="0"
+                android:layout_column="0" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/colorWhite"
+                android:text="0"
+                android:id="@+id/textView2"
+                android:layout_row="0"
+                android:layout_column="1" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/colorWhite"
+                android:text="Player 2"
+                android:id="@+id/textView3"
+                android:layout_row="1"
+                android:layout_column="0" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/colorWhite"
+                android:text="0"
+                android:id="@+id/textView7"
+                android:layout_row="1"
+                android:layout_column="1" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/colorWhite"
+                android:text="Player 3"
+                android:id="@+id/textView4"
+                android:layout_row="2"
+                android:layout_column="0" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/colorWhite"
+                android:text="0"
+                android:id="@+id/textView8"
+                android:layout_row="2"
+                android:layout_column="1" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/colorWhite"
+                android:text="Player 4"
+                android:id="@+id/textView5"
+                android:layout_row="3"
+                android:layout_column="0" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0"
+                android:textColor="@color/colorWhite"
+                android:id="@+id/textView9"
+                android:layout_row="3"
+                android:layout_column="1" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Player 5"
+                android:textColor="@color/colorWhite"
+                android:id="@+id/textView6"
+                android:layout_row="4"
+                android:layout_column="0" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0"
+                android:textColor="@color/colorWhite"
+                android:id="@+id/textView10"
+                android:layout_row="4"
+                android:layout_column="1" />
+        </GridLayout>
+
+    </RelativeLayout>
+</FrameLayout>
