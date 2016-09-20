@@ -20,6 +20,7 @@ public class MainActivity extends AppCompatActivity implements TableFragment.OnF
         super.onCreate(savedInstanceState);
         if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
             setContentView(R.layout.activity_main_landscape);
+            getSupportActionBar().hide();
         } else {
             setContentView(R.layout.activity_main);
         }
