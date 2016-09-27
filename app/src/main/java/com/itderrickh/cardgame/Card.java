@@ -93,7 +93,6 @@ public class Card {
 
     public int getResourceImage() {
         String resourceString = this.getValueString() + "_of_" + this.getSuitString();
-        System.out.println(resourceString);
         return getResId(resourceString, R.drawable.class);
     }
 
