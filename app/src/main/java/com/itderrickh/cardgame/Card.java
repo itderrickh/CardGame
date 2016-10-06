@@ -1,10 +1,9 @@
 package com.itderrickh.cardgame;
 
-import android.graphics.drawable.Drawable;
-
+import java.io.Serializable;
 import java.lang.reflect.Field;
 
-public class Card {
+public class Card implements Serializable {
     public final static int SPADES = 0;
     public final static int HEARTS = 1;
     public final static int DIAMONDS = 2;

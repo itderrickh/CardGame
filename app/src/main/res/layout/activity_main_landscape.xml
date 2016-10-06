@@ -16,19 +16,20 @@
         android:layout_alignRight="@id/tables_fragment"
         android:layout_height="match_parent"
         android:layout_weight="1">
-        <EditText
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/editText"
             android:layout_alignParentBottom="true"
-            android:layout_toLeftOf="@+id/button"
-            android:layout_alignLeft="@+id/listView"
-            android:layout_alignStart="@+id/listView" />
+            android:height="40dp"
+            android:layout_toLeftOf="@+id/sendMessage"
+            android:layout_alignLeft="@+id/messagesList"
+            android:layout_alignStart="@+id/messagesList" />
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Send"
-            android:id="@+id/button"
+            android:id="@+id/sendMessage"
             android:layout_alignTop="@+id/editText"
             android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true" />
@@ -36,7 +37,7 @@
         <ListView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/listView"
+            android:id="@+id/messagesList"
             android:layout_alignParentTop="true"
             android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true"

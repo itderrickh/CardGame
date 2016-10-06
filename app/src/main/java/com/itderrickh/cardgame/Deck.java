@@ -1,6 +1,8 @@
 package com.itderrickh.cardgame;
 
-public class Deck {
+import java.io.Serializable;
+
+public class Deck implements Serializable {
     public static final int SUIT_COUNT = 4;
     public static final int CARD_IN_SUIT_COUNT = 14;
     public static final int DECK_SIZE = 52;

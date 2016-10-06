@@ -1,4 +1,4 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:layout_width="match_parent"
@@ -53,10 +53,24 @@
             android:layout_row="0"
             android:layout_column="4" />
     </GridLayout>
+
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="fill_parent"
+        android:gravity="center_vertical"
+        android:id="@+id/trumpArea">
+        <ImageView
+            style="@style/CardDimen"
+            android:id="@+id/trumpCard"
+            android:src="@drawable/cardback"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/hand"
         android:gravity="bottom"
+        android:layout_alignParentBottom="true"
         android:layout_marginBottom="10dp"
         android:weightSum="10">
         <ImageView
@@ -100,4 +114,34 @@
             android:id="@+id/card10"
             android:src="@drawable/cardback"/>
     </LinearLayout>
-</FrameLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/hand"
+        android:layout_marginBottom="10dp"
+        android:id="@+id/playingArea">
+        <ImageView
+            style="@style/CardDimen"
+            android:src="@drawable/cardback"
+            android:id="@+id/playCard1"/>
+        <ImageView
+            style="@style/CardDimen"
+            android:src="@drawable/cardback"
+            android:id="@+id/playCard2"/>
+        <ImageView
+            style="@style/CardDimen"
+            android:src="@drawable/cardback"
+            android:id="@+id/playCard3"/>
+        <ImageView
+            style="@style/CardDimen"
+            android:src="@drawable/cardback"
+            android:id="@+id/playCard4"/>
+        <ImageView
+            style="@style/CardDimen"
+            android:src="@drawable/cardback"
+            android:id="@+id/playCard5"/>
+    </LinearLayout>
+
+
+</RelativeLayout>
