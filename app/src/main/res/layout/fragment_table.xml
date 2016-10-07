@@ -56,13 +56,14 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="fill_parent"
-        android:gravity="center_vertical"
-        android:id="@+id/trumpArea">
+        android:layout_height="wrap_content"
+        android:id="@+id/trumpArea"
+        android:layout_above="@+id/playingArea"
+        android:layout_marginBottom="10dp">
         <ImageView
             style="@style/CardDimen"
             android:id="@+id/trumpCard"
-            android:src="@drawable/cardback"/>
+            android:src="@drawable/cardback" />
     </LinearLayout>
 
     <LinearLayout

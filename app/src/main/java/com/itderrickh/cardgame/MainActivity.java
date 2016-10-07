@@ -30,7 +30,8 @@ public class MainActivity extends AppCompatActivity implements TableFragment.OnF
     private ListView messages;
     private Button sendMessage;
     private MessageAdapter messageAdapter;
-    private TextView messageText;
+    private EditText messageText;
+
     @Override
     public void onFragmentInteraction(Uri uri) {
 
@@ -46,14 +47,17 @@ public class MainActivity extends AppCompatActivity implements TableFragment.OnF
             this.messages = (ListView) findViewById(R.id.messagesList);
             this.sendMessage = (Button) findViewById(R.id.sendMessage);
             this.messageAdapter = new MessageAdapter(this, R.layout.messages_row, new ArrayList<Message>());
-            this.messageText = (TextView) findViewById(R.id.editText);
+            this.messageText = (EditText) findViewById(R.id.editText);
 
             this.messages.setAdapter(this.messageAdapter);
             this.sendMessage.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    String text = (String)messageText.getText();
+                    String text = messageText.getText().toString();
+
+                    //Note this string "heined50" is a placeholder for the username later
                     messageAdapter.add(new Message(0, "heined50", text));
+                    messageText.setText("");
                 }
             });
         } else {
@@ -76,16 +80,16 @@ public class MainActivity extends AppCompatActivity implements TableFragment.OnF
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             Message message = getItem(position);
-            TextView messageUser = (TextView) findViewById(R.id.messageUser);
-            TextView messageText = (TextView) findViewById(R.id.messageText);
-
             if (convertView == null) {
                 convertView = LayoutInflater.from(getContext()).inflate(R.layout.messages_row, parent, false);
             }
 
+            TextView messageUser = (TextView) convertView.findViewById(R.id.messageUser);
+            TextView messageText = (TextView) convertView.findViewById(R.id.messageText);
+
             messageUser.setText(message.getUsername());
             messageText.setText(message.getMessage());
-            return super.getView(position, convertView, parent);
+            return convertView;
         }
     }
 }
