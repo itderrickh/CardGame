@@ -4,13 +4,11 @@ import android.content.Context;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.itderrickh.cardgame.Card;
 import com.itderrickh.cardgame.Deck;
@@ -18,12 +16,18 @@ import com.itderrickh.cardgame.R;
 
 public class TableFragment extends Fragment {
     private OnFragmentInteractionListener mListener;
-    private Deck deck;
-    private ImageView[] handLocs;
-    private ImageView trumpCardImage;
-    private Card[] hand;
-    private Card trumpCard;
+
+    //Playfield
     private ImageView[] playField;
+    private Card[] playedCards;
+    //Hand
+    private ImageView[] handLocs;
+    private Card[] hand;
+    //Trump card
+    private ImageView trumpCardImage;
+    private Card trumpCard;
+
+    private Deck deck;
     private int lastClickedCard = -1;
     private int cardPlayed = 0;
 
@@ -75,7 +79,20 @@ public class TableFragment extends Fragment {
 
         trumpCardImage.setImageResource(trumpCard.getResourceImage());
         for(int c = 0; c < this.handLocs.length; c++) {
-            this.handLocs[c].setImageResource(this.hand[c].getResourceImage());
+            if(this.hand[c] != null) {
+                this.handLocs[c].setImageResource(this.hand[c].getResourceImage());
+            } else {
+                this.handLocs[c].setImageBitmap(null);
+            }
+        }
+
+        for(int d = 0; d < this.playedCards.length; d++) {
+            if(this.playedCards[d] != null) {
+                this.playField[d].setImageResource(this.playedCards[d].getResourceImage());
+            } else {
+                //this.playField[d].setImageResource(R.drawable.cardback);
+                this.playField[d].setImageBitmap(null);
+            }
         }
 
         setupClickEvents();
@@ -84,18 +101,19 @@ public class TableFragment extends Fragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        if(false) {
-        //This work below will restore the state of the game
-        //NOTE: Will have to save a few more state things to make sure this works
-        //if(savedInstanceState != null) {
+
+        if(savedInstanceState != null) {
             this.deck = (Deck)savedInstanceState.getSerializable("deck");
             this.trumpCard = (Card)savedInstanceState.getSerializable("trumpCard");
             this.hand = (Card[])savedInstanceState.getSerializable("hand");
+            this.playedCards = (Card[])savedInstanceState.getSerializable("playedCards");
+            this.cardPlayed = savedInstanceState.getInt("cardPlayed");
         } else {
             this.deck = new Deck();
 
             this.trumpCard = this.deck.pullCard();
             this.hand = new Card[10];
+            this.playedCards = new Card[5];
             for(int i = 0; i < this.hand.length; i++) {
                 this.hand[i] = this.deck.pullCard();
             }
@@ -110,6 +128,8 @@ public class TableFragment extends Fragment {
         outState.putSerializable("deck", this.deck);
         outState.putSerializable("trumpCard", this.trumpCard);
         outState.putSerializable("hand", this.hand);
+        outState.putSerializable("playedCards", this.playedCards);
+        outState.putInt("cardPlayed", this.cardPlayed);
     }
 
     private void setupClickEvents() {
@@ -132,6 +152,7 @@ public class TableFragment extends Fragment {
             if(lastClickedCard == index) {
                 cardView.setImageBitmap(null);
                 this.playField[cardPlayed].setImageResource(this.hand[index].getResourceImage());
+                this.playedCards[cardPlayed] = this.hand[index];
                 this.hand[index] = null;
                 cardView.setBackgroundColor(Color.TRANSPARENT);
                 cardPlayed++;

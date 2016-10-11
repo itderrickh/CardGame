@@ -2,11 +2,7 @@ package com.itderrickh.cardgame;
 
 import android.content.Context;
 import android.content.res.Configuration;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
-import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -16,13 +12,10 @@ import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.itderrickh.cardgame.fragments.TableFragment;
-
-import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 
@@ -69,10 +62,6 @@ public class MainActivity extends AppCompatActivity implements TableFragment.OnF
     }
 
     public class MessageAdapter extends ArrayAdapter<Message> {
-        public MessageAdapter(Context context, int resource) {
-            super(context, resource);
-        }
-
         public MessageAdapter(Context context, int resource, ArrayList<Message> objects) {
             super(context, resource, objects);
         }

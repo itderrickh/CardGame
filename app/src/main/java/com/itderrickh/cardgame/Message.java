@@ -1,8 +1,5 @@
 package com.itderrickh.cardgame;
 
-/**
- * Created by heined50 on 10/6/2016.
- */
 public class Message {
     public int userId;
     public String username;
