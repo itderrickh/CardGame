@@ -3,6 +3,8 @@ package com.itderrickh.cardgame;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.net.Uri;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -15,6 +17,7 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.itderrickh.cardgame.fragments.BiddingFragment;
 import com.itderrickh.cardgame.fragments.TableFragment;
 
 import java.util.ArrayList;
@@ -56,6 +59,12 @@ public class MainActivity extends AppCompatActivity implements TableFragment.OnF
         } else {
             setContentView(R.layout.activity_main);
         }
+
+        FragmentManager fragmentManager = getFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        BiddingFragment bidding = new BiddingFragment();
+        fragmentTransaction.replace(R.id.playingArea, bidding, "BIDDING");
+        fragmentTransaction.commit();
 
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
 
