@@ -18,20 +18,16 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.itderrickh.cardgame.fragments.BiddingFragment;
+import com.itderrickh.cardgame.fragments.FieldFragment;
 import com.itderrickh.cardgame.fragments.TableFragment;
 
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity implements TableFragment.OnFragmentInteractionListener {
+public class MainActivity extends AppCompatActivity {
     private ListView messages;
     private Button sendMessage;
     private MessageAdapter messageAdapter;
     private EditText messageText;
-
-    @Override
-    public void onFragmentInteraction(Uri uri) {
-
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,12 +58,11 @@ public class MainActivity extends AppCompatActivity implements TableFragment.OnF
 
         FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        BiddingFragment bidding = new BiddingFragment();
+        BiddingFragment bidding = BiddingFragment.newInstance(10);
         fragmentTransaction.replace(R.id.playingArea, bidding, "BIDDING");
         fragmentTransaction.commit();
 
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
-
     }
 
     public class MessageAdapter extends ArrayAdapter<Message> {

@@ -1,7 +1,9 @@
 package com.itderrickh.cardgame.fragments;
 
 import android.app.Fragment;
-import android.database.DataSetObserver;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
+import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,14 +12,23 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
 
+import com.itderrickh.cardgame.Card;
 import com.itderrickh.cardgame.R;
 
 public class BiddingFragment extends Fragment implements View.OnClickListener {
+
+    private int biddingSlots;
     public BiddingFragment() { }
 
-    public static BiddingFragment newInstance() {
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+    }
+
+    public static BiddingFragment newInstance(int slots) {
         BiddingFragment fragment = new BiddingFragment();
         Bundle args = new Bundle();
+        args.putInt("slots", slots);
         fragment.setArguments(args);
         return fragment;
     }
@@ -25,6 +36,8 @@ public class BiddingFragment extends Fragment implements View.OnClickListener {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        this.biddingSlots = getArguments().getInt("slots");
     }
 
     @Override
@@ -39,7 +52,10 @@ public class BiddingFragment extends Fragment implements View.OnClickListener {
     public void onStart() {
         super.onStart();
 
-        final Integer[] values = {1,2,3,4,5,6,7,8,9,10};
+        //Initialize array 1 to N
+        final Integer[] values = new Integer[biddingSlots];
+        for(int i = 0; i < biddingSlots; i++) { values[i] = i + 1; }
+
         ArrayAdapter<Integer> adapter = new ArrayAdapter<Integer>(getActivity(), R.layout.support_simple_spinner_dropdown_item, values);
         Spinner spinner = (Spinner) getView().findViewById(R.id.biddingSpinner);
         Button submitBid = (Button) getView().findViewById(R.id.submitBid);
@@ -60,5 +76,18 @@ public class BiddingFragment extends Fragment implements View.OnClickListener {
         super.onSaveInstanceState(outState);
 
         //Save the state of the game here, in the future labs we will actually use this
+    }
+
+    @Override
+    public void onClick(View v) {
+        FragmentManager fragmentManager = getFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        FieldFragment makeField = FieldFragment.newInstance(new Card[5]);
+        fragmentTransaction.replace(R.id.playingArea, makeField, "BIDDING");
+        fragmentTransaction.commit();
+
+        TableFragment tableFragment = (TableFragment) fragmentManager.findFragmentById(R.id.tables_fragment);
+        tableFragment.setupClickEvents();
+        tableFragment.doneBidding = true;
     }
 }

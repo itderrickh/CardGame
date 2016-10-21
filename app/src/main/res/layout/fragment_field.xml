@@ -1,0 +1,26 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.itderrickh.cardgame.fragments.FieldFragment">
+    <ImageView
+        style="@style/CardDimen"
+        android:src="@drawable/cardback"
+        android:id="@+id/playCard1"/>
+    <ImageView
+        style="@style/CardDimen"
+        android:src="@drawable/cardback"
+        android:id="@+id/playCard2"/>
+    <ImageView
+        style="@style/CardDimen"
+        android:src="@drawable/cardback"
+        android:id="@+id/playCard3"/>
+    <ImageView
+        style="@style/CardDimen"
+        android:src="@drawable/cardback"
+        android:id="@+id/playCard4"/>
+    <ImageView
+        style="@style/CardDimen"
+        android:src="@drawable/cardback"
+        android:id="@+id/playCard5"/>
+</LinearLayout>
