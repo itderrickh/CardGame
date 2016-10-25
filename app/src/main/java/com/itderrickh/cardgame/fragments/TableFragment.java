@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.itderrickh.cardgame.Card;
 import com.itderrickh.cardgame.Deck;
@@ -29,6 +30,7 @@ public class TableFragment extends Fragment {
     private int lastClickedCard = -1;
     private int cardPlayed = 0;
     public boolean doneBidding = false;
+    public int bid = 0;
 
     public TableFragment() { }
 
@@ -122,6 +124,11 @@ public class TableFragment extends Fragment {
         outState.putSerializable("playedCards", this.playedCards);
         outState.putInt("cardPlayed", this.cardPlayed);
         outState.putBoolean("doneBidding", this.doneBidding);
+    }
+
+    public void updateBid() {
+        TextView bidArea = (TextView) getView().findViewById(R.id.bid1);
+        bidArea.setText(bid + "");
     }
 
     public void setupClickEvents() {

@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import com.itderrickh.cardgame.Card;
 import com.itderrickh.cardgame.R;
@@ -18,6 +19,7 @@ import com.itderrickh.cardgame.R;
 public class BiddingFragment extends Fragment implements View.OnClickListener {
 
     private int biddingSlots;
+    private Spinner spinner;
     public BiddingFragment() { }
 
     @Override
@@ -53,11 +55,11 @@ public class BiddingFragment extends Fragment implements View.OnClickListener {
         super.onStart();
 
         //Initialize array 1 to N
-        final Integer[] values = new Integer[biddingSlots];
-        for(int i = 0; i < biddingSlots; i++) { values[i] = i + 1; }
+        final Integer[] values = new Integer[biddingSlots + 1];
+        for(int i = 0; i <= biddingSlots; i++) { values[i] = i; }
 
         ArrayAdapter<Integer> adapter = new ArrayAdapter<Integer>(getActivity(), R.layout.support_simple_spinner_dropdown_item, values);
-        Spinner spinner = (Spinner) getView().findViewById(R.id.biddingSpinner);
+        spinner = (Spinner) getView().findViewById(R.id.biddingSpinner);
         Button submitBid = (Button) getView().findViewById(R.id.submitBid);
         spinner.setAdapter(adapter);
 
@@ -80,6 +82,10 @@ public class BiddingFragment extends Fragment implements View.OnClickListener {
 
     @Override
     public void onClick(View v) {
+        TextView textView = (TextView) spinner.getSelectedView();
+        String result = textView.getText().toString();
+        int bid = Integer.parseInt(result);
+
         FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         FieldFragment makeField = FieldFragment.newInstance(new Card[5]);
@@ -89,5 +95,7 @@ public class BiddingFragment extends Fragment implements View.OnClickListener {
         TableFragment tableFragment = (TableFragment) fragmentManager.findFragmentById(R.id.tables_fragment);
         tableFragment.setupClickEvents();
         tableFragment.doneBidding = true;
+        tableFragment.bid = bid;
+        tableFragment.updateBid();
     }
 }
