@@ -28,10 +28,13 @@ public class MainActivity extends AppCompatActivity {
     private Button sendMessage;
     private MessageAdapter messageAdapter;
     private EditText messageText;
+    public String email;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        email = getIntent().getStringExtra("email");
+
         if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
             setContentView(R.layout.activity_main_landscape);
             getSupportActionBar().hide();
@@ -47,8 +50,7 @@ public class MainActivity extends AppCompatActivity {
                 public void onClick(View view) {
                     String text = messageText.getText().toString();
 
-                    //Note this string "heined50" is a placeholder for the username later
-                    messageAdapter.add(new Message(0, "heined50", text));
+                    messageAdapter.add(new Message(0, email, text));
                     messageText.setText("");
                 }
             });

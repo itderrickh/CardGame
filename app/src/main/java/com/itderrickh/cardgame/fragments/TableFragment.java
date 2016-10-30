@@ -14,6 +14,7 @@ import android.widget.TextView;
 
 import com.itderrickh.cardgame.Card;
 import com.itderrickh.cardgame.Deck;
+import com.itderrickh.cardgame.MainActivity;
 import com.itderrickh.cardgame.R;
 
 public class TableFragment extends Fragment {
@@ -26,11 +27,14 @@ public class TableFragment extends Fragment {
     private ImageView trumpCardImage;
     private Card trumpCard;
 
+    private TextView[] usernameFields;
+
     private Deck deck;
     private int lastClickedCard = -1;
     private int cardPlayed = 0;
     public boolean doneBidding = false;
     public int bid = 0;
+    public String username;
 
     public TableFragment() { }
 
@@ -57,6 +61,17 @@ public class TableFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
+        MainActivity parent = (MainActivity)getActivity();
+        this.username = parent.email;
+
+        usernameFields = new TextView[5];
+        usernameFields[0] = (TextView) getView().findViewById(R.id.playerName1);
+        usernameFields[1] = (TextView) getView().findViewById(R.id.playerName2);
+        usernameFields[2] = (TextView) getView().findViewById(R.id.playerName3);
+        usernameFields[3] = (TextView) getView().findViewById(R.id.playerName4);
+        usernameFields[4] = (TextView) getView().findViewById(R.id.playerName5);
+
+        usernameFields[0].setText(this.username);
 
         handLocs = new ImageView[10];
         handLocs[0] = (ImageView) getView().findViewById(R.id.card1);
@@ -101,6 +116,7 @@ public class TableFragment extends Fragment {
             this.playedCards = (Card[])savedInstanceState.getSerializable("playedCards");
             this.cardPlayed = savedInstanceState.getInt("cardPlayed");
             this.doneBidding = savedInstanceState.getBoolean("doneBidding");
+            this.username = savedInstanceState.getString("username");
         } else {
             this.deck = new Deck();
             this.doneBidding = false;
@@ -124,6 +140,7 @@ public class TableFragment extends Fragment {
         outState.putSerializable("playedCards", this.playedCards);
         outState.putInt("cardPlayed", this.cardPlayed);
         outState.putBoolean("doneBidding", this.doneBidding);
+        outState.putString("username", this.username);
     }
 
     public void updateBid() {
