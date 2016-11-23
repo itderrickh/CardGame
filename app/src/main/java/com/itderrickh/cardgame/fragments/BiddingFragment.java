@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
@@ -16,9 +17,12 @@ import android.widget.TextView;
 import com.itderrickh.cardgame.Card;
 import com.itderrickh.cardgame.R;
 
-public class BiddingFragment extends Fragment implements View.OnClickListener {
+import java.io.Serializable;
+
+public class BiddingFragment extends Fragment implements View.OnClickListener, Serializable {
 
     private int biddingSlots;
+    private int bid = 0;
     private Spinner spinner;
     public BiddingFragment() { }
 
@@ -40,6 +44,10 @@ public class BiddingFragment extends Fragment implements View.OnClickListener {
         super.onCreate(savedInstanceState);
 
         this.biddingSlots = getArguments().getInt("slots");
+
+        if(savedInstanceState != null) {
+            this.bid = savedInstanceState.getInt("bid");
+        }
     }
 
     @Override
@@ -62,6 +70,19 @@ public class BiddingFragment extends Fragment implements View.OnClickListener {
         spinner = (Spinner) getView().findViewById(R.id.biddingSpinner);
         Button submitBid = (Button) getView().findViewById(R.id.submitBid);
         spinner.setAdapter(adapter);
+        spinner.setSelection(bid);
+
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                bid = i;
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parentView) {
+                // your code here
+            }
+        });
 
         submitBid.setOnClickListener(this);
     }
@@ -69,22 +90,20 @@ public class BiddingFragment extends Fragment implements View.OnClickListener {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-
-        //Load or initialize datas
     }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
-        //Save the state of the game here, in the future labs we will actually use this
+        outState.putInt("bid", bid);
     }
 
     @Override
     public void onClick(View v) {
         TextView textView = (TextView) spinner.getSelectedView();
         String result = textView.getText().toString();
-        int bid = Integer.parseInt(result);
+        bid = Integer.parseInt(result);
 
         FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();

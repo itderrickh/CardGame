@@ -29,11 +29,18 @@ public class MainActivity extends AppCompatActivity {
     private MessageAdapter messageAdapter;
     private EditText messageText;
     public String email;
+    public ArrayList<Message> messagesArray = new ArrayList<>();
+    public BiddingFragment bidFrag;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         email = getIntent().getStringExtra("email");
+
+        if(savedInstanceState != null) {
+            messagesArray = (ArrayList<Message>)savedInstanceState.getSerializable("messagesArray");
+            bidFrag = (BiddingFragment)savedInstanceState.getSerializable("bidFrag");
+        }
 
         if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
             setContentView(R.layout.activity_main_landscape);
@@ -41,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
 
             this.messages = (ListView) findViewById(R.id.messagesList);
             this.sendMessage = (Button) findViewById(R.id.sendMessage);
-            this.messageAdapter = new MessageAdapter(this, R.layout.messages_row, new ArrayList<Message>());
+            this.messageAdapter = new MessageAdapter(this, R.layout.messages_row, messagesArray);
             this.messageText = (EditText) findViewById(R.id.editText);
 
             this.messages.setAdapter(this.messageAdapter);
@@ -60,11 +67,23 @@ public class MainActivity extends AppCompatActivity {
 
         FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        BiddingFragment bidding = BiddingFragment.newInstance(10);
-        fragmentTransaction.replace(R.id.playingArea, bidding, "BIDDING");
+
+        if(bidFrag == null) {
+            bidFrag = BiddingFragment.newInstance(10);
+        }
+
+        fragmentTransaction.replace(R.id.playingArea, bidFrag, "BIDDING");
         fragmentTransaction.commit();
 
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        outState.putSerializable("messagesArray", messagesArray);
+        outState.putSerializable("bidFrag", bidFrag);
     }
 
     public class MessageAdapter extends ArrayAdapter<Message> {
