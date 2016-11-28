@@ -4,8 +4,20 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.itderrickh.cardgame.MainActivity">
-    <fragment class="com.itderrickh.cardgame.fragments.TableFragment"
-        android:id="@+id/tables_fragment"
+
+    <LinearLayout
         android:layout_width="wrap_content"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:id="@+id/tableArea">
+    </LinearLayout>
+
+
+    <ProgressBar
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/isJoined"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true" />
 </RelativeLayout>

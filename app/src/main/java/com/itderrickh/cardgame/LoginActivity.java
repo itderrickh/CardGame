@@ -23,18 +23,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.VolleyError;
-import com.itderrickh.cardgame.helpers.DatabaseHandler;
 import com.itderrickh.cardgame.helpers.VolleyCallback;
 import com.itderrickh.cardgame.services.LoginService;
 
 import org.json.JSONObject;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import com.itderrickh.cardgame.helpers.User;
 
 /**
  * A login screen that offers login via email/password.
@@ -95,18 +90,6 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        SharedPreferences preferences = getSharedPreferences("FROLF_SETTINGS", Context.MODE_PRIVATE);
-        if(preferences.contains("Auth_Token")) {
-            //Start the main page and make sure they can't back button to the login
-            Intent main = new Intent(getApplicationContext(), MainActivity.class);
-            main.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            startActivity(main);
-        }
-    }
-
     private void attemptLogin() {
         // Reset errors
         mEmailView.setError(null);
@@ -146,91 +129,41 @@ public class LoginActivity extends AppCompatActivity {
             // perform the user login attempt.
             showProgress(true);
 
-            //Handle logging in the user
-            DatabaseHandler db = new DatabaseHandler(getApplicationContext());
-
-            //Register Block
-            if(isRegistering) {
-                //DB has values check for dups
-                if(db.hasValues()) {
-                    User checkUser = db.getUser(email);
-                    //User doesn't exist, register
-                    if(checkUser == null) {
-                        db.insertUser(new User(email, password));
-
-                        Intent main = new Intent(getApplicationContext(), MainActivity.class);
-                        main.putExtra("email", email);
-                        main.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                        startActivity(main);
-                    }
-                    //User does exist, don't re-register
-                    else {
-                        Toast.makeText(getApplicationContext(), "User already registered", Toast.LENGTH_SHORT).show();
-                    }
-                }
-                //No db values insert user as is
-                else {
-                    db.insertUser(new User(email, password));
-
-                    Intent main = new Intent(getApplicationContext(), MainActivity.class);
-                    main.putExtra("email", email);
-                    main.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                    startActivity(main);
-                }
-            }
-            //Login Block
-            else {
-                //Db has values check login
-                if(db.hasValues()) {
-                    User checkUser = db.getUser(email);
-                    //Check creds
-                    if(checkUser != null && checkUser.getPassword().equals(password)) {
-                        Intent main = new Intent(getApplicationContext(), MainActivity.class);
-                        main.putExtra("email", email);
-                        main.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                        startActivity(main);
-                    }
-                    //Failed login
-                    else {
-                        Toast.makeText(getApplicationContext(), "Invalid credentials, please try again", Toast.LENGTH_SHORT).show();
-                    }
-                }
-                //Db has no values, user doesn't exist
-                else {
-                    Toast.makeText(getApplicationContext(), "User does not exist", Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            showProgress(false);
-
-            //This is the actual login with remote db access
-            /*LoginService.getInstance().login(getApplicationContext(), email, password, new VolleyCallback() {
+            LoginService.getInstance().login(getApplicationContext(), email, password, isRegistering, new VolleyCallback() {
                 @Override
                 public void onSuccess(JSONObject result) {
-                    String token = "";
+                    String message = "";
+                    boolean success = false;
                     try {
-                        token = result.getString("token");
+                        success = result.getBoolean("success");
+                        message = result.getString("message");
+
+                        if(success) {
+                            if(!message.equals("")) {
+                                SharedPreferences preferences = getSharedPreferences("CARDGAME_SETTINGS", Context.MODE_PRIVATE);
+                                SharedPreferences.Editor editor = preferences.edit();
+                                editor.putString("Auth_Token", message);
+                                editor.putString("Email", email);
+                                editor.apply();
+
+                                //Start the main page and make sure they can't back button to the login
+                                Intent main = new Intent(getApplicationContext(), MainActivity.class);
+                                main.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                startActivity(main);
+                            }
+                        } else {
+                            Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
+                        }
+
+                        showProgress(false);
                     } catch (Exception ex) {}
-
-                    if(!token.equals("")) {
-                        SharedPreferences preferences = getSharedPreferences("FROLF_SETTINGS", Context.MODE_PRIVATE);
-                        SharedPreferences.Editor editor = preferences.edit();
-                        editor.putString("Auth_Token", token);
-                        editor.putString("Email", email);
-                        editor.apply();
-
-                        //Start the main page and make sure they can't back button to the login
-                        Intent main = new Intent(getApplicationContext(), MainActivity.class);
-                        main.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                        startActivity(main);
-                    }
                 }
 
                 @Override
                 public void onError(VolleyError result) {
-                    System.out.println("Failure");
+                    Toast.makeText(getApplicationContext(), "Something went wrong, try again!", Toast.LENGTH_SHORT).show();
                 }
-            });*/
+            });
         }
     }
 

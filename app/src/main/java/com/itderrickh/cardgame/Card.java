@@ -14,11 +14,65 @@ public class Card implements Serializable {
     public final static int QUEEN = 12;
     public final static int KING = 13;
 
-    private final int suit;
-    private final int value;
+    private int suit;
+    private int value;
 
     public Card() {
         this(SPADES, ACE);
+    }
+
+    public Card(String suit, String value) {
+        this();
+        int s = SPADES;
+        int v = ACE;
+
+        switch(suit) {
+            case "S":
+                s = SPADES;
+                break;
+            case "H":
+                s = HEARTS;
+                break;
+            case "D":
+                s = DIAMONDS;
+                break;
+            case "C":
+                s = CLUBS;
+                break;
+            default:
+                s = SPADES;
+        }
+
+        switch(value) {
+            case "2":
+            case "3":
+            case "4":
+            case "5":
+            case "6":
+            case "7":
+            case "8":
+            case "9":
+            case "10":
+                v = Integer.parseInt(value);
+                break;
+            case "A":
+                v = ACE;
+                break;
+            case "J":
+                v = JACK;
+                break;
+            case "Q":
+                v = QUEEN;
+                break;
+            case "K":
+                v = KING;
+                break;
+            default:
+                v = ACE;
+        }
+
+        this.suit = s;
+        this.value = v;
     }
 
     public Card(int suit, int value) {

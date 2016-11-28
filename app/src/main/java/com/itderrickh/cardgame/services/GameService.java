@@ -6,11 +6,14 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.android.volley.AuthFailureError;
+import com.itderrickh.cardgame.helpers.VolleyArrayCallback;
 import com.itderrickh.cardgame.helpers.VolleyCallback;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 import java.util.Map;
 import java.util.HashMap;
@@ -30,12 +33,20 @@ public class GameService {
         return me;
     }
 
-    public void initializeGame(Context context, String username, String password, final VolleyCallback callback) {
+    public void initializeGame(Context context, final String token, final VolleyCallback callback) {
+        genericRequest(INITIALIZE_URL, context, token, callback);
+    }
+
+    public void joinGame(Context context, final String token, final VolleyCallback callback) {
+        genericRequest(JOIN_URL, context, token, callback);
+    }
+
+    public void getHand(Context context, final String token, final VolleyArrayCallback callback) {
         RequestQueue requestQueue = Volley.newRequestQueue(context);
-        JsonObjectRequest jsObjRequest = new JsonObjectRequest
-                (Request.Method.POST, INITIALIZE_URL, null, new Response.Listener<JSONObject>() {
+        JsonArrayRequest jsObjRequest = new JsonArrayRequest
+                (Request.Method.POST, HAND_URL, null, new Response.Listener<JSONArray>() {
                     @Override
-                    public void onResponse(JSONObject response) {
+                    public void onResponse(JSONArray response) {
                         callback.onSuccess(response);
                     }
                 }, new Response.ErrorListener() {
@@ -48,7 +59,7 @@ public class GameService {
             public Map<String, String> getHeaders() throws AuthFailureError {
                 Map<String,String> params =  super.getHeaders();
                 if(params==null)params = new HashMap<>();
-                params.put("Authorize","Your authorization");
+                params.put("Authorize", token);
                 return params;
             }
         };
@@ -56,36 +67,10 @@ public class GameService {
         requestQueue.add(jsObjRequest);
     }
 
-    public void joinGame(Context context, String username, String password, final VolleyCallback callback) {
+    private void genericRequest(String url, Context context, final String token, final VolleyCallback callback) {
         RequestQueue requestQueue = Volley.newRequestQueue(context);
         JsonObjectRequest jsObjRequest = new JsonObjectRequest
-                (Request.Method.POST, JOIN_URL, null, new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        callback.onSuccess(response);
-                    }
-                }, new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        callback.onError(error);
-                    }
-                }){
-                    @Override
-                    public Map<String, String> getHeaders() throws AuthFailureError {
-                        Map<String,String> params =  super.getHeaders();
-                        if(params==null)params = new HashMap<>();
-                        params.put("Authorize","Your authorization");
-                        return params;
-                    }
-        };
-
-        requestQueue.add(jsObjRequest);
-    }
-
-    public void getHand(Context context, String username, String password, final VolleyCallback callback) {
-        RequestQueue requestQueue = Volley.newRequestQueue(context);
-        JsonObjectRequest jsObjRequest = new JsonObjectRequest
-                (Request.Method.POST, HAND_URL, null, new Response.Listener<JSONObject>() {
+                (Request.Method.POST, url, null, new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
                         callback.onSuccess(response);
@@ -98,9 +83,12 @@ public class GameService {
                 }){
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
-                Map<String,String> params =  super.getHeaders();
-                if(params==null)params = new HashMap<>();
-                params.put("Authorize","Your authorization");
+                Map<String,String> params = super.getHeaders();
+                if(params == null) {
+                    params = new HashMap<>();
+                }
+
+                params.put("Authorize", token);
                 return params;
             }
         };

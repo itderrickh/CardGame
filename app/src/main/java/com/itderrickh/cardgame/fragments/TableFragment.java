@@ -12,12 +12,21 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.android.volley.VolleyError;
 import com.itderrickh.cardgame.Card;
 import com.itderrickh.cardgame.Deck;
 import com.itderrickh.cardgame.MainActivity;
 import com.itderrickh.cardgame.R;
+import com.itderrickh.cardgame.helpers.VolleyArrayCallback;
+import com.itderrickh.cardgame.helpers.VolleyCallback;
+import com.itderrickh.cardgame.services.GameService;
 
-public class TableFragment extends Fragment {
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.Serializable;
+
+public class TableFragment extends Fragment implements Serializable {
     //Playfield
     private Card[] playedCards;
     //Hand
@@ -87,13 +96,6 @@ public class TableFragment extends Fragment {
         trumpCardImage = (ImageView) getView().findViewById(R.id.trumpCard);
 
         trumpCardImage.setImageResource(trumpCard.getResourceImage());
-        for(int c = 0; c < this.handLocs.length; c++) {
-            if(this.hand[c] != null) {
-                this.handLocs[c].setImageResource(this.hand[c].getResourceImage());
-            } else {
-                this.handLocs[c].setImageBitmap(null);
-            }
-        }
 
         if(doneBidding) {
             FragmentManager fragmentManager = getFragmentManager();
@@ -123,9 +125,34 @@ public class TableFragment extends Fragment {
             this.trumpCard = this.deck.pullCard();
             this.hand = new Card[10];
             this.playedCards = new Card[5];
-            for(int i = 0; i < this.hand.length; i++) {
-                this.hand[i] = this.deck.pullCard();
-            }
+
+            GameService.getInstance().getHand(getActivity(), "", new VolleyArrayCallback() {
+                @Override
+                public void onSuccess(JSONArray result) {
+                    try {
+                        for(int c = 0; c < result.length(); c++) {
+                            JSONObject row = result.getJSONObject(c);
+                            Card card = new Card(row.getString("suit"), row.getString("value"));
+                            hand[c] = card;
+                        }
+                    } catch (Exception ex) {
+
+                    }
+
+                    for(int c = 0; c < handLocs.length; c++) {
+                        if(hand[c] != null) {
+                            handLocs[c].setImageResource(hand[c].getResourceImage());
+                        } else {
+                            handLocs[c].setImageBitmap(null);
+                        }
+                    }
+                }
+
+                @Override
+                public void onError(VolleyError string) {
+
+                }
+            });
         }
     }
 
