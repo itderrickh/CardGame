@@ -1,4 +1,4 @@
-package com.itderrickh.cardgame;
+package com.itderrickh.cardgame.activities;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -23,6 +23,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.VolleyError;
+import com.itderrickh.cardgame.R;
 import com.itderrickh.cardgame.helpers.VolleyCallback;
 import com.itderrickh.cardgame.services.LoginService;
 
@@ -172,7 +173,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private boolean isPasswordValid(String password) {
-        Pattern p = Pattern.compile("^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{6,20}$");
+        Pattern p = Pattern.compile("^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{6,40}$");
         Matcher m = p.matcher(password);
 
         return password.length() >= 6 && m.matches();

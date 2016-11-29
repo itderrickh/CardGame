@@ -14,7 +14,7 @@ import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import com.itderrickh.cardgame.Card;
+import com.itderrickh.cardgame.helpers.Card;
 import com.itderrickh.cardgame.R;
 
 import java.io.Serializable;

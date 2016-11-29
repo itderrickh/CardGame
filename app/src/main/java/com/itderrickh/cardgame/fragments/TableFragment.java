@@ -13,12 +13,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.android.volley.VolleyError;
-import com.itderrickh.cardgame.Card;
-import com.itderrickh.cardgame.Deck;
-import com.itderrickh.cardgame.MainActivity;
+import com.itderrickh.cardgame.helpers.Card;
+import com.itderrickh.cardgame.activities.MainActivity;
 import com.itderrickh.cardgame.R;
 import com.itderrickh.cardgame.helpers.VolleyArrayCallback;
-import com.itderrickh.cardgame.helpers.VolleyCallback;
 import com.itderrickh.cardgame.services.GameService;
 
 import org.json.JSONArray;
@@ -38,7 +36,6 @@ public class TableFragment extends Fragment implements Serializable {
 
     private TextView[] usernameFields;
 
-    private Deck deck;
     private int lastClickedCard = -1;
     private int cardPlayed = 0;
     public boolean doneBidding = false;
@@ -112,7 +109,6 @@ public class TableFragment extends Fragment implements Serializable {
         super.onActivityCreated(savedInstanceState);
 
         if(savedInstanceState != null) {
-            this.deck = (Deck)savedInstanceState.getSerializable("deck");
             this.trumpCard = (Card)savedInstanceState.getSerializable("trumpCard");
             this.hand = (Card[])savedInstanceState.getSerializable("hand");
             this.playedCards = (Card[])savedInstanceState.getSerializable("playedCards");
@@ -120,9 +116,8 @@ public class TableFragment extends Fragment implements Serializable {
             this.doneBidding = savedInstanceState.getBoolean("doneBidding");
             this.username = savedInstanceState.getString("username");
         } else {
-            this.deck = new Deck();
             this.doneBidding = false;
-            this.trumpCard = this.deck.pullCard();
+            this.trumpCard = new Card(); //TODO: get trump card
             this.hand = new Card[10];
             this.playedCards = new Card[5];
 
@@ -161,7 +156,6 @@ public class TableFragment extends Fragment implements Serializable {
         super.onSaveInstanceState(outState);
 
         //Save the state of the game here, in the future labs we will actually use this
-        outState.putSerializable("deck", this.deck);
         outState.putSerializable("trumpCard", this.trumpCard);
         outState.putSerializable("hand", this.hand);
         outState.putSerializable("playedCards", this.playedCards);

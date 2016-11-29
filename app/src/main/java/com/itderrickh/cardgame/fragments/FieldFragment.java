@@ -8,7 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
-import com.itderrickh.cardgame.Card;
+import com.itderrickh.cardgame.helpers.Card;
 import com.itderrickh.cardgame.R;
 
 public class FieldFragment extends Fragment {

@@ -1,4 +1,6 @@
-package com.itderrickh.cardgame;
+package com.itderrickh.cardgame.helpers;
+
+import com.itderrickh.cardgame.R;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;

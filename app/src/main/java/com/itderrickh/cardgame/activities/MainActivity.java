@@ -1,10 +1,11 @@
-package com.itderrickh.cardgame;
+package com.itderrickh.cardgame.activities;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
-import android.net.Uri;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
@@ -22,10 +23,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.VolleyError;
+import com.itderrickh.cardgame.R;
 import com.itderrickh.cardgame.fragments.BiddingFragment;
-import com.itderrickh.cardgame.fragments.FieldFragment;
 import com.itderrickh.cardgame.fragments.TableFragment;
+import com.itderrickh.cardgame.helpers.Message;
 import com.itderrickh.cardgame.helpers.VolleyCallback;
+import com.itderrickh.cardgame.services.GameReadyService;
 import com.itderrickh.cardgame.services.GameService;
 
 import org.json.JSONObject;
@@ -33,6 +36,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
+    private Intent serviceIntent;
     private ListView messages;
     private Button sendMessage;
     private MessageAdapter messageAdapter;
@@ -46,6 +50,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        SharedPreferences preferences = getSharedPreferences("CARDGAME_SETTINGS", Context.MODE_PRIVATE);
+        String token = preferences.getString("Auth_Token", "");
+
         email = getIntent().getStringExtra("email");
         final ProgressBar pgBar = (ProgressBar) findViewById(R.id.isJoined);
         this.sendMessage = (Button) findViewById(R.id.sendMessage);
@@ -58,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
             tableFrag = (TableFragment) savedInstanceState.getSerializable("tableFrag");
         }
 
-        GameService.getInstance().joinGame(getApplicationContext(), "", new VolleyCallback() {
+        GameService.getInstance().joinGame(getApplicationContext(), token, new VolleyCallback() {
             @Override
             public void onSuccess(JSONObject result) {
                 try {
@@ -68,10 +76,9 @@ public class MainActivity extends AppCompatActivity {
                             @Override
                             public void onReceive(Context context, Intent intent) {
                                 try {
-                                    String data = intent.getStringExtra("data");
-                                    JSONObject result = new JSONObject(data);
+                                    boolean data = intent.getBooleanExtra("data", false);
 
-                                    if(result.getBoolean("success")) {
+                                    if(data) {
                                         pgBar.setVisibility(View.GONE);
 
                                         sendMessage.setOnClickListener(new View.OnClickListener() {
@@ -93,18 +100,25 @@ public class MainActivity extends AppCompatActivity {
                                 }
                             }
                         };
+
+                        serviceIntent = new Intent(getApplicationContext(), GameReadyService.class);
+                        startService(serviceIntent);
+
+                        registerReceiver(receiver, new IntentFilter("com.itderrickh.broadcast"));
                     } else {
                         Toast.makeText(MainActivity.this, "Game full", Toast.LENGTH_SHORT).show();
                         Intent login = new Intent(getApplicationContext(), LoginActivity.class);
                         login.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                         startActivity(login);
                     }
-                } catch (Exception ex) {}
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
             }
 
             @Override
             public void onError(VolleyError string) {
-
+                string.printStackTrace();
             }
         });
 
@@ -119,6 +133,23 @@ public class MainActivity extends AppCompatActivity {
         }
 
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        serviceIntent = new Intent(getApplicationContext(), GameReadyService.class);
+        startService(serviceIntent);
+
+        registerReceiver(receiver, new IntentFilter("com.itderrickh.broadcast"));
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        stopService(serviceIntent);
+        unregisterReceiver(receiver);
     }
 
     private void insertBiddingFrag() {

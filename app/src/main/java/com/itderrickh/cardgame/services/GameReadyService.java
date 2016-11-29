@@ -2,8 +2,15 @@ package com.itderrickh.cardgame.services;
 
 import android.app.Service;
 import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.IBinder;
+
+import com.android.volley.VolleyError;
+import com.itderrickh.cardgame.helpers.VolleyCallback;
+
+import org.json.JSONObject;
 
 public class GameReadyService extends Service {
 
@@ -20,7 +27,10 @@ public class GameReadyService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        updater = new GameReadyThread();
+        SharedPreferences preferences = getSharedPreferences("CARDGAME_SETTINGS", Context.MODE_PRIVATE);
+        String token = preferences.getString("Auth_Token", "");
+
+        updater = new GameReadyThread(token);
 
         intent = new Intent(BROADCAST_ACTION);
     }
@@ -48,11 +58,22 @@ public class GameReadyService extends Service {
         }
     }
 
+    public void sendResult() {
+        intent.putExtra("data", true);
+        sendBroadcast(intent);
+    }
+
     public class GameReadyThread extends Thread {
         public boolean isRunning = false;
         public static final String DATA_URL = "http://webdev.cs.uwosh.edu/students/heined50/CardsBackend/initializeGame.php";
         public long DELAY = 4000;
         public String token;
+
+        public GameReadyThread(String token) {
+            super();
+
+            this.token = token;
+        }
 
         @Override
         public void run() {
@@ -61,8 +82,24 @@ public class GameReadyService extends Service {
             isRunning = true;
             while (isRunning) {
                 //Do work to get data here
-                //TODO STUFF HERE
-                GameService.getInstance().initializeGame();
+                GameService.getInstance().initializeGame(getApplicationContext(), token, new VolleyCallback() {
+                    @Override
+                    public void onSuccess(JSONObject result) {
+                        try {
+                            boolean success = result.getBoolean("success");
+                            if(success) {
+                                sendResult();
+                            }
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                        }
+                    }
+
+                    @Override
+                    public void onError(VolleyError exception) {
+                        exception.printStackTrace();
+                    }
+                });
 
                 try {
                     Thread.sleep(DELAY);

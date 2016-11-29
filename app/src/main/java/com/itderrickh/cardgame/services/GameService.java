@@ -57,8 +57,11 @@ public class GameService {
                 }){
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
-                Map<String,String> params =  super.getHeaders();
-                if(params==null)params = new HashMap<>();
+                Map<String,String> params = super.getHeaders();
+                if(params == null || params.isEmpty()) {
+                    params = new HashMap<>();
+                }
+
                 params.put("Authorize", token);
                 return params;
             }
@@ -84,7 +87,7 @@ public class GameService {
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
                 Map<String,String> params = super.getHeaders();
-                if(params == null) {
+                if(params == null || params.isEmpty()) {
                     params = new HashMap<>();
                 }
 

@@ -1,4 +1,4 @@
-package com.itderrickh.cardgame;
+package com.itderrickh.cardgame.helpers;
 
 public class Message {
     public int userId;
