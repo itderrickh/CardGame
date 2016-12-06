@@ -20,17 +20,14 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.android.volley.VolleyError;
 import com.itderrickh.cardgame.R;
 import com.itderrickh.cardgame.fragments.BiddingFragment;
 import com.itderrickh.cardgame.fragments.TableFragment;
 import com.itderrickh.cardgame.helpers.Message;
-import com.itderrickh.cardgame.helpers.VolleyCallback;
-import com.itderrickh.cardgame.services.GameReadyService;
-import com.itderrickh.cardgame.services.GameService;
+import com.itderrickh.cardgame.services.GameRunnerService;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -66,61 +63,38 @@ public class MainActivity extends AppCompatActivity {
             tableFrag = (TableFragment) savedInstanceState.getSerializable("tableFrag");
         }
 
-        GameService.getInstance().joinGame(getApplicationContext(), token, new VolleyCallback() {
+        //Handle updates from the score service
+        receiver = new BroadcastReceiver() {
             @Override
-            public void onSuccess(JSONObject result) {
+            public void onReceive(Context context, Intent intent) {
                 try {
-                    if(result.getBoolean("success")) {
-                        //Handle updates from the score service
-                        receiver = new BroadcastReceiver() {
-                            @Override
-                            public void onReceive(Context context, Intent intent) {
-                                try {
-                                    boolean data = intent.getBooleanExtra("data", false);
+                    JSONObject jsonObj = new JSONObject(getIntent().getStringExtra("data"));
+                    int currentStatus = jsonObj.getInt("status");
 
-                                    if(data) {
-                                        pgBar.setVisibility(View.GONE);
+                    if(currentStatus == 1 || currentStatus == 2) {
+                        //Still loading up the game
+                    } else if(currentStatus == 3) {
+                        pgBar.setVisibility(View.GONE);
 
-                                        sendMessage.setOnClickListener(new View.OnClickListener() {
-                                            @Override
-                                            public void onClick(View view) {
-                                                String text = messageText.getText().toString();
+                        JSONArray bids = jsonObj.getJSONArray("bids");
+                        JSONArray hand = jsonObj.getJSONArray("hand");
+                        JSONArray users = jsonObj.getJSONArray("users");
 
-                                                messageAdapter.add(new Message(0, email, text));
-                                                messageText.setText("");
-                                            }
-                                        });
+                        insertBiddingFrag();
+                        insertTable();
+                    } else if(currentStatus == 4) {
 
-                                        insertTable();
-                                        insertBiddingFrag();
-                                    }
-                                } catch (Exception ex) {
-                                    //Handle exception here
-                                    ex.printStackTrace();
-                                }
-                            }
-                        };
+                    } else if(currentStatus == 5) {
 
-                        serviceIntent = new Intent(getApplicationContext(), GameReadyService.class);
-                        startService(serviceIntent);
+                    } else if(currentStatus == 6) {
 
-                        registerReceiver(receiver, new IntentFilter("com.itderrickh.broadcast"));
-                    } else {
-                        Toast.makeText(MainActivity.this, "Game full", Toast.LENGTH_SHORT).show();
-                        Intent login = new Intent(getApplicationContext(), LoginActivity.class);
-                        login.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                        startActivity(login);
                     }
                 } catch (Exception ex) {
+                    //Handle exception here
                     ex.printStackTrace();
                 }
             }
-
-            @Override
-            public void onError(VolleyError string) {
-                string.printStackTrace();
-            }
-        });
+        };
 
         if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
             setContentView(R.layout.activity_main_landscape);
@@ -139,10 +113,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        serviceIntent = new Intent(getApplicationContext(), GameReadyService.class);
+        serviceIntent = new Intent(getApplicationContext(), GameRunnerService.class);
         startService(serviceIntent);
 
-        registerReceiver(receiver, new IntentFilter("com.itderrickh.broadcast"));
+        registerReceiver(receiver, new IntentFilter("com.itderrickh.cardgame.broadcast"));
     }
 
     @Override

@@ -12,12 +12,12 @@ import com.itderrickh.cardgame.helpers.VolleyCallback;
 
 import org.json.JSONObject;
 
-public class GameReadyService extends Service {
-
+public class GameRunnerService extends Service {
     GameReadyThread updater;
     BroadcastReceiver broadcaster;
     Intent intent;
-    public static final String BROADCAST_ACTION = "com.itderrickh.broadcast";
+    public static final String BROADCAST_ACTION = "com.itderrickh.cardgame.broadcast";
+    public String token;
 
     @Override
     public IBinder onBind(Intent arg0) {
@@ -28,7 +28,7 @@ public class GameReadyService extends Service {
     public void onCreate() {
         super.onCreate();
         SharedPreferences preferences = getSharedPreferences("CARDGAME_SETTINGS", Context.MODE_PRIVATE);
-        String token = preferences.getString("Auth_Token", "");
+        token = preferences.getString("Auth_Token", "");
 
         updater = new GameReadyThread(token);
 
@@ -39,7 +39,6 @@ public class GameReadyService extends Service {
     public synchronized int onStartCommand(Intent intent, int flags, int startId) {
 
         if (!updater.isRunning()) {
-            updater.token = intent.getStringExtra("token");
             updater.start();
             updater.isRunning = true;
         }
@@ -58,21 +57,17 @@ public class GameReadyService extends Service {
         }
     }
 
-    public void sendResult() {
-        intent.putExtra("data", true);
+    public void sendResult(JSONObject result) {
+        intent.putExtra("data", result.toString());
         sendBroadcast(intent);
     }
 
     public class GameReadyThread extends Thread {
         public boolean isRunning = false;
-        public static final String DATA_URL = "http://webdev.cs.uwosh.edu/students/heined50/CardsBackend/initializeGame.php";
         public long DELAY = 4000;
-        public String token;
 
         public GameReadyThread(String token) {
             super();
-
-            this.token = token;
         }
 
         @Override
@@ -82,14 +77,11 @@ public class GameReadyService extends Service {
             isRunning = true;
             while (isRunning) {
                 //Do work to get data here
-                GameService.getInstance().initializeGame(getApplicationContext(), token, new VolleyCallback() {
+                GameService.getInstance().service(getApplicationContext(), token, new VolleyCallback() {
                     @Override
                     public void onSuccess(JSONObject result) {
                         try {
-                            boolean success = result.getBoolean("success");
-                            if(success) {
-                                sendResult();
-                            }
+                            sendResult(result);
                         } catch (Exception ex) {
                             ex.printStackTrace();
                         }
@@ -114,4 +106,4 @@ public class GameReadyService extends Service {
             return this.isRunning;
         }
     }
-} // outer class end
+}

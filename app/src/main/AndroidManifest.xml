@@ -25,6 +25,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <service
+            android:name=".services.GameRunnerService"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.itderrickh.STOP_SERVICE"/>
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>

@@ -12,15 +12,9 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.android.volley.VolleyError;
 import com.itderrickh.cardgame.helpers.Card;
 import com.itderrickh.cardgame.activities.MainActivity;
 import com.itderrickh.cardgame.R;
-import com.itderrickh.cardgame.helpers.VolleyArrayCallback;
-import com.itderrickh.cardgame.services.GameService;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.io.Serializable;
 
@@ -121,7 +115,7 @@ public class TableFragment extends Fragment implements Serializable {
             this.hand = new Card[10];
             this.playedCards = new Card[5];
 
-            GameService.getInstance().getHand(getActivity(), "", new VolleyArrayCallback() {
+            /*GameService.getInstance().getHand(getActivity(), "", new VolleyArrayCallback() {
                 @Override
                 public void onSuccess(JSONArray result) {
                     try {
@@ -147,7 +141,7 @@ public class TableFragment extends Fragment implements Serializable {
                 public void onError(VolleyError string) {
 
                 }
-            });
+            });*/
         }
     }
 
