@@ -18,7 +18,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.itderrickh.cardgame.R;
@@ -38,6 +38,9 @@ public class MainActivity extends AppCompatActivity {
     private Button sendMessage;
     private MessageAdapter messageAdapter;
     private EditText messageText;
+    private TextView loadingText;
+    private RelativeLayout loadingArea;
+
     public String email;
     public ArrayList<Message> messagesArray = new ArrayList<>();
     public BiddingFragment bidFrag;
@@ -52,7 +55,9 @@ public class MainActivity extends AppCompatActivity {
         String token = preferences.getString("Auth_Token", "");
 
         email = getIntent().getStringExtra("email");
-        final ProgressBar pgBar = (ProgressBar) findViewById(R.id.isJoined);
+        loadingArea = (RelativeLayout) findViewById(R.id.loadingView);
+        loadingText = (TextView) findViewById(R.id.loadingText);
+
         this.sendMessage = (Button) findViewById(R.id.sendMessage);
         this.messages = (ListView) findViewById(R.id.messagesList);
         this.messageText = (EditText) findViewById(R.id.editText);
@@ -68,13 +73,15 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onReceive(Context context, Intent intent) {
                 try {
-                    JSONObject jsonObj = new JSONObject(getIntent().getStringExtra("data"));
+                    JSONObject jsonObj = new JSONObject(intent.getStringExtra("data"));
                     int currentStatus = jsonObj.getInt("status");
 
-                    if(currentStatus == 1 || currentStatus == 2) {
-                        //Still loading up the game
+                    if (currentStatus == 1) {
+                        loadingText.setText("Waiting for users");
+                    } else if(currentStatus == 2) {
+                        loadingText.setText("Setting up game");
                     } else if(currentStatus == 3) {
-                        pgBar.setVisibility(View.GONE);
+                        loadingArea.setVisibility(View.GONE);
 
                         JSONArray bids = jsonObj.getJSONArray("bids");
                         JSONArray hand = jsonObj.getJSONArray("hand");
