@@ -15,8 +15,10 @@ import android.widget.TextView;
 import com.itderrickh.cardgame.helpers.Card;
 import com.itderrickh.cardgame.activities.MainActivity;
 import com.itderrickh.cardgame.R;
+import com.itderrickh.cardgame.helpers.GameUser;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 
 public class TableFragment extends Fragment implements Serializable {
     //Playfield
@@ -35,12 +37,15 @@ public class TableFragment extends Fragment implements Serializable {
     public boolean doneBidding = false;
     public int bid = 0;
     public String username;
+    public ArrayList<GameUser> users;
 
     public TableFragment() { }
 
-    public static TableFragment newInstance() {
+    public static TableFragment newInstance(ArrayList<GameUser> gameUsers) {
         TableFragment fragment = new TableFragment();
         Bundle args = new Bundle();
+
+        fragment.users = gameUsers;
         fragment.setArguments(args);
         return fragment;
     }
@@ -71,7 +76,9 @@ public class TableFragment extends Fragment implements Serializable {
         usernameFields[3] = (TextView) getView().findViewById(R.id.playerName4);
         usernameFields[4] = (TextView) getView().findViewById(R.id.playerName5);
 
-        usernameFields[0].setText(this.username);
+        for(int i = 0; i < usernameFields.length; i++) {
+            usernameFields[i].setText(users.get(i).getEmail());
+        }
 
         handLocs = new ImageView[10];
         handLocs[0] = (ImageView) getView().findViewById(R.id.card1);
@@ -114,34 +121,6 @@ public class TableFragment extends Fragment implements Serializable {
             this.trumpCard = new Card(); //TODO: get trump card
             this.hand = new Card[10];
             this.playedCards = new Card[5];
-
-            /*GameService.getInstance().getHand(getActivity(), "", new VolleyArrayCallback() {
-                @Override
-                public void onSuccess(JSONArray result) {
-                    try {
-                        for(int c = 0; c < result.length(); c++) {
-                            JSONObject row = result.getJSONObject(c);
-                            Card card = new Card(row.getString("suit"), row.getString("value"));
-                            hand[c] = card;
-                        }
-                    } catch (Exception ex) {
-
-                    }
-
-                    for(int c = 0; c < handLocs.length; c++) {
-                        if(hand[c] != null) {
-                            handLocs[c].setImageResource(hand[c].getResourceImage());
-                        } else {
-                            handLocs[c].setImageBitmap(null);
-                        }
-                    }
-                }
-
-                @Override
-                public void onError(VolleyError string) {
-
-                }
-            });*/
         }
     }
 

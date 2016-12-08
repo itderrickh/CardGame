@@ -24,6 +24,7 @@ import android.widget.TextView;
 import com.itderrickh.cardgame.R;
 import com.itderrickh.cardgame.fragments.BiddingFragment;
 import com.itderrickh.cardgame.fragments.TableFragment;
+import com.itderrickh.cardgame.helpers.GameUser;
 import com.itderrickh.cardgame.helpers.Message;
 import com.itderrickh.cardgame.services.GameRunnerService;
 
@@ -47,6 +48,8 @@ public class MainActivity extends AppCompatActivity {
     public TableFragment tableFrag;
     BroadcastReceiver receiver;
 
+    private ArrayList<GameUser> gameUsers;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,8 +58,21 @@ public class MainActivity extends AppCompatActivity {
         String token = preferences.getString("Auth_Token", "");
 
         email = getIntent().getStringExtra("email");
+
+        if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            setContentView(R.layout.activity_main_landscape);
+            getSupportActionBar().hide();
+
+            this.messageAdapter = new MessageAdapter(this, R.layout.messages_row, messagesArray);
+            this.messages.setAdapter(this.messageAdapter);
+        } else {
+            setContentView(R.layout.activity_main);
+        }
+
         loadingArea = (RelativeLayout) findViewById(R.id.loadingView);
         loadingText = (TextView) findViewById(R.id.loadingText);
+
+        gameUsers = new ArrayList<GameUser>();
 
         this.sendMessage = (Button) findViewById(R.id.sendMessage);
         this.messages = (ListView) findViewById(R.id.messagesList);
@@ -87,8 +103,18 @@ public class MainActivity extends AppCompatActivity {
                         JSONArray hand = jsonObj.getJSONArray("hand");
                         JSONArray users = jsonObj.getJSONArray("users");
 
-                        insertBiddingFrag();
-                        insertTable();
+                        //Fill up the users from the JSON
+                        if(gameUsers.size() == 0) {
+                            GameUser row;
+                            for(int i = 0; i < users.length(); i++) {
+                                JSONObject user = users.getJSONObject(i);
+                                row = new GameUser(user.getString("email"), user.getInt("id"), user.getInt("gameid"), user.getInt("userid"));
+                                gameUsers.add(row);
+                            }
+
+                            insertTable(gameUsers);
+                            insertBiddingFrag();
+                        }
                     } else if(currentStatus == 4) {
 
                     } else if(currentStatus == 5) {
@@ -102,16 +128,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         };
-
-        if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            setContentView(R.layout.activity_main_landscape);
-            getSupportActionBar().hide();
-
-            this.messageAdapter = new MessageAdapter(this, R.layout.messages_row, messagesArray);
-            this.messages.setAdapter(this.messageAdapter);
-        } else {
-            setContentView(R.layout.activity_main);
-        }
 
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
     }
@@ -145,12 +161,12 @@ public class MainActivity extends AppCompatActivity {
         fragmentTransaction.commit();
     }
 
-    private void insertTable() {
+    private void insertTable(ArrayList<GameUser> users) {
         FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
         if(tableFrag == null) {
-            tableFrag = TableFragment.newInstance();
+            tableFrag = TableFragment.newInstance(users);
         }
 
         fragmentTransaction.replace(R.id.tableArea, tableFrag, "TABLE");
