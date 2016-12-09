@@ -21,19 +21,24 @@ import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.android.volley.VolleyError;
 import com.itderrickh.cardgame.R;
 import com.itderrickh.cardgame.fragments.BiddingFragment;
+import com.itderrickh.cardgame.fragments.FieldFragment;
 import com.itderrickh.cardgame.fragments.TableFragment;
+import com.itderrickh.cardgame.helpers.Card;
 import com.itderrickh.cardgame.helpers.GameUser;
 import com.itderrickh.cardgame.helpers.Message;
+import com.itderrickh.cardgame.helpers.VolleyCallback;
 import com.itderrickh.cardgame.services.GameRunnerService;
+import com.itderrickh.cardgame.services.GameService;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements BiddingFragment.OnBidInteractionManager {
     private Intent serviceIntent;
     private ListView messages;
     private Button sendMessage;
@@ -46,16 +51,21 @@ public class MainActivity extends AppCompatActivity {
     public ArrayList<Message> messagesArray = new ArrayList<>();
     public BiddingFragment bidFrag;
     public TableFragment tableFrag;
+    public FieldFragment fieldFrag;
     BroadcastReceiver receiver;
+    private boolean receivedHandAndTable = false;
+
+    private String token;
 
     private ArrayList<GameUser> gameUsers;
+    private ArrayList<Card> handCards;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         SharedPreferences preferences = getSharedPreferences("CARDGAME_SETTINGS", Context.MODE_PRIVATE);
-        String token = preferences.getString("Auth_Token", "");
+        token = preferences.getString("Auth_Token", "");
 
         email = getIntent().getStringExtra("email");
 
@@ -73,6 +83,7 @@ public class MainActivity extends AppCompatActivity {
         loadingText = (TextView) findViewById(R.id.loadingText);
 
         gameUsers = new ArrayList<GameUser>();
+        handCards = new ArrayList<Card>();
 
         this.sendMessage = (Button) findViewById(R.id.sendMessage);
         this.messages = (ListView) findViewById(R.id.messagesList);
@@ -102,9 +113,10 @@ public class MainActivity extends AppCompatActivity {
                         JSONArray bids = jsonObj.getJSONArray("bids");
                         JSONArray hand = jsonObj.getJSONArray("hand");
                         JSONArray users = jsonObj.getJSONArray("users");
+                        JSONObject trumpCard = jsonObj.getJSONObject("trump");
 
                         //Fill up the users from the JSON
-                        if(gameUsers.size() == 0) {
+                        if(!receivedHandAndTable) {
                             GameUser row;
                             for(int i = 0; i < users.length(); i++) {
                                 JSONObject user = users.getJSONObject(i);
@@ -112,11 +124,32 @@ public class MainActivity extends AppCompatActivity {
                                 gameUsers.add(row);
                             }
 
-                            insertTable(gameUsers);
+                            Card cardRow;
+                            for(int j = 0; j < hand.length(); j++) {
+                                JSONObject card = hand.getJSONObject(j);
+                                cardRow = new Card(card.getString("suit"), card.getString("value"));
+                                cardRow.setId(card.getInt("handcardid"));
+
+                                handCards.add(cardRow);
+                            }
+
+                            Card trump = new Card(trumpCard.getString("suit"), trumpCard.getString("value"));
+
+                            insertTable(gameUsers, handCards, trump);
                             insertBiddingFrag();
+
+                            receivedHandAndTable = true;
                         }
                     } else if(currentStatus == 4) {
 
+                        //On your turn
+                        tableFrag.setupClickEvents();
+                        //FragmentManager fragmentManager = getFragmentManager();
+                        //FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                        //FieldFragment makeField = FieldFragment.newInstance(playedCards);
+                        //fragmentTransaction.replace(R.id.playingArea, makeField, "BIDDING");
+                        //fragmentTransaction.commit();
+                        //setupClickEvents();
                     } else if(currentStatus == 5) {
 
                     } else if(currentStatus == 6) {
@@ -161,16 +194,40 @@ public class MainActivity extends AppCompatActivity {
         fragmentTransaction.commit();
     }
 
-    private void insertTable(ArrayList<GameUser> users) {
+    private void insertTable(ArrayList<GameUser> users, ArrayList<Card> cards, Card trumpCard) {
         FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
         if(tableFrag == null) {
-            tableFrag = TableFragment.newInstance(users);
+            tableFrag = TableFragment.newInstance(users, cards, trumpCard);
         }
 
         fragmentTransaction.replace(R.id.tableArea, tableFrag, "TABLE");
         fragmentTransaction.commit();
+    }
+
+    @Override
+    public void onBidInteraction(int bid) {
+        //Do something with the bid
+        GameService.getInstance().placeBid(getApplicationContext(), token, bid, new VolleyCallback() {
+            @Override
+            public void onSuccess(JSONObject result) {
+                FragmentManager fragmentManager = getFragmentManager();
+                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+                if(fieldFrag == null) {
+                    fieldFrag = FieldFragment.newInstance(new Card[5]);
+                }
+
+                fragmentTransaction.replace(R.id.playingArea, fieldFrag, "TABLE");
+                fragmentTransaction.commit();
+            }
+
+            @Override
+            public void onError(VolleyError string) {
+                string.printStackTrace();
+            }
+        });
     }
 
     @Override

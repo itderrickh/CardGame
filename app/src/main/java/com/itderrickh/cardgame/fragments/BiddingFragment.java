@@ -1,5 +1,6 @@
 package com.itderrickh.cardgame.fragments;
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
@@ -24,11 +25,32 @@ public class BiddingFragment extends Fragment implements View.OnClickListener, S
     private int biddingSlots;
     private int bid = 0;
     private Spinner spinner;
+    public OnBidInteractionManager listener;
+
     public BiddingFragment() { }
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
+
+        if(context instanceof OnBidInteractionManager) {
+            listener = (OnBidInteractionManager) context;
+        }
+    }
+
+    @Override
+    public void onAttach(Activity context) {
+        super.onAttach(context);
+
+        if(context instanceof OnBidInteractionManager) {
+            listener = (OnBidInteractionManager) context;
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        listener = null;
     }
 
     public static BiddingFragment newInstance(int slots) {
@@ -105,16 +127,10 @@ public class BiddingFragment extends Fragment implements View.OnClickListener, S
         String result = textView.getText().toString();
         bid = Integer.parseInt(result);
 
-        FragmentManager fragmentManager = getFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        FieldFragment makeField = FieldFragment.newInstance(new Card[5]);
-        fragmentTransaction.replace(R.id.playingArea, makeField, "BIDDING");
-        fragmentTransaction.commit();
+        listener.onBidInteraction(this.bid);
+    }
 
-        TableFragment tableFragment = (TableFragment) fragmentManager.findFragmentById(R.id.tables_fragment);
-        tableFragment.setupClickEvents();
-        tableFragment.doneBidding = true;
-        tableFragment.bid = bid;
-        tableFragment.updateBid();
+    public interface OnBidInteractionManager {
+        void onBidInteraction(int bid);
     }
 }

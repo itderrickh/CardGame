@@ -18,6 +18,7 @@ public class Card implements Serializable {
 
     private int suit;
     private int value;
+    private int id;
 
     public Card() {
         this(SPADES, ACE);
@@ -81,6 +82,9 @@ public class Card implements Serializable {
         this.suit = suit;
         this.value = value;
     }
+
+    public int getId() { return this.id; }
+    public void setId(int id) { this.id = id; }
 
     public int getSuit() {
         return this.suit;
