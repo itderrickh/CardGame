@@ -1,5 +1,6 @@
 package com.itderrickh.cardgame.fragments;
 
+import android.app.Activity;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Context;
@@ -12,6 +13,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.itderrickh.cardgame.helpers.Bid;
 import com.itderrickh.cardgame.helpers.Card;
 import com.itderrickh.cardgame.activities.MainActivity;
 import com.itderrickh.cardgame.R;
@@ -30,6 +32,8 @@ public class TableFragment extends Fragment implements Serializable {
     private Card trumpCard;
 
     private TextView[] usernameFields;
+    private TextView[] bidFields;
+
 
     private int lastClickedCard = -1;
     private int cardPlayed = 0;
@@ -37,6 +41,9 @@ public class TableFragment extends Fragment implements Serializable {
     public String username;
     public ArrayList<GameUser> users;
     public ArrayList<Card> hand;
+    private boolean turnOver = true;
+
+    private OnCardPlayedHandler listener;
 
     public TableFragment() { }
 
@@ -77,6 +84,13 @@ public class TableFragment extends Fragment implements Serializable {
         usernameFields[3] = (TextView) getView().findViewById(R.id.playerName4);
         usernameFields[4] = (TextView) getView().findViewById(R.id.playerName5);
 
+        bidFields = new TextView[5];
+        bidFields[0] = (TextView) getView().findViewById(R.id.bid1);
+        bidFields[1] = (TextView) getView().findViewById(R.id.bid2);
+        bidFields[2] = (TextView) getView().findViewById(R.id.bid3);
+        bidFields[3] = (TextView) getView().findViewById(R.id.bid4);
+        bidFields[4] = (TextView) getView().findViewById(R.id.bid5);
+
         for(int i = 0; i < usernameFields.length; i++) {
             String email = users.get(i).getEmail();
             usernameFields[i].setText(email.substring(0, email.indexOf("@")));
@@ -94,7 +108,7 @@ public class TableFragment extends Fragment implements Serializable {
         handLocs[8] = (ImageView) getView().findViewById(R.id.card9);
         handLocs[9] = (ImageView) getView().findViewById(R.id.card10);
 
-        for(int z = 0; z < handLocs.length; z++) {
+        for(int z = 0; z < hand.size(); z++) {
             handLocs[z].setImageResource(hand.get(z).getResourceImage());
         }
 
@@ -110,6 +124,20 @@ public class TableFragment extends Fragment implements Serializable {
         if(savedInstanceState != null) {
             this.playedCards = (Card[])savedInstanceState.getSerializable("playedCards");
             this.cardPlayed = savedInstanceState.getInt("cardPlayed");
+        }
+    }
+
+    public void updateScoreBoard(ArrayList<Bid> bids) {
+        for(int y = 0; y < users.size(); y++) {
+            GameUser u = users.get(y);
+            String email = u.getEmail();
+            usernameFields[y].setText(email.substring(0, email.indexOf("@")));
+
+            for(int x = 0; x < bids.size(); x++) {
+                if(u.getUserid() == bids.get(x).getUserid()) {
+                    bidFields[y].setText(bids.get(x).getValue() + "");
+                }
+            }
         }
     }
 
@@ -130,8 +158,8 @@ public class TableFragment extends Fragment implements Serializable {
         bidArea.setText(bid + "");
     }
 
-    public void setPlayedCards(ArrayList<Card> playedCards) {
-
+    public void resetTurn() {
+        turnOver = false;
     }
 
     public void setupClickEvents() {
@@ -150,19 +178,16 @@ public class TableFragment extends Fragment implements Serializable {
     }
 
     private void cardClick(ImageView cardView, int index) {
-        if(cardPlayed < 5 && this.hand.get(index) != null) {
+        if(!turnOver && cardPlayed < 5 && this.hand.get(index) != null) {
             if(lastClickedCard == index) {
                 cardView.setImageBitmap(null);
-                this.playedCards[cardPlayed] = this.hand.get(index);
+                Card c = this.hand.get(index);
                 this.hand.set(index, null);
                 cardView.setBackgroundColor(Color.TRANSPARENT);
                 cardPlayed++;
+                turnOver = true;
 
-                FragmentManager fragmentManager = getFragmentManager();
-                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                FieldFragment makeField = FieldFragment.newInstance(playedCards);
-                fragmentTransaction.replace(R.id.playingArea, makeField, "BIDDING");
-                fragmentTransaction.commit();
+                listener.playedCard(c);
             } else {
                 cardView.setBackgroundColor(Color.BLUE);
                 lastClickedCard = index;
@@ -178,10 +203,27 @@ public class TableFragment extends Fragment implements Serializable {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
+
+        if(context instanceof OnCardPlayedHandler) {
+            listener = (OnCardPlayedHandler) context;
+        }
+    }
+
+    @Override
+    public void onAttach(Activity context) {
+        super.onAttach(context);
+
+        if(context instanceof OnCardPlayedHandler) {
+            listener = (OnCardPlayedHandler) context;
+        }
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
+    }
+
+    public interface OnCardPlayedHandler {
+        void playedCard(Card played);
     }
 }

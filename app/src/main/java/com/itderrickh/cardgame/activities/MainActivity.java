@@ -26,6 +26,7 @@ import com.itderrickh.cardgame.R;
 import com.itderrickh.cardgame.fragments.BiddingFragment;
 import com.itderrickh.cardgame.fragments.FieldFragment;
 import com.itderrickh.cardgame.fragments.TableFragment;
+import com.itderrickh.cardgame.helpers.Bid;
 import com.itderrickh.cardgame.helpers.Card;
 import com.itderrickh.cardgame.helpers.GameUser;
 import com.itderrickh.cardgame.helpers.Message;
@@ -38,7 +39,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity implements BiddingFragment.OnBidInteractionManager {
+public class MainActivity extends AppCompatActivity implements BiddingFragment.OnBidInteractionManager, TableFragment.OnCardPlayedHandler {
     private Intent serviceIntent;
     private ListView messages;
     private Button sendMessage;
@@ -54,11 +55,14 @@ public class MainActivity extends AppCompatActivity implements BiddingFragment.O
     public FieldFragment fieldFrag;
     BroadcastReceiver receiver;
     private boolean receivedHandAndTable = false;
+    private boolean holdBidsAndHand = false;
 
     private String token;
 
     private ArrayList<GameUser> gameUsers;
     private ArrayList<Card> handCards;
+    private ArrayList<Bid> gameBids;
+    private ArrayList<Card> fieldCards;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,6 +88,8 @@ public class MainActivity extends AppCompatActivity implements BiddingFragment.O
 
         gameUsers = new ArrayList<GameUser>();
         handCards = new ArrayList<Card>();
+        gameBids = new ArrayList<Bid>();
+        fieldCards = new ArrayList<Card>();
 
         this.sendMessage = (Button) findViewById(R.id.sendMessage);
         this.messages = (ListView) findViewById(R.id.messagesList);
@@ -140,16 +146,98 @@ public class MainActivity extends AppCompatActivity implements BiddingFragment.O
 
                             receivedHandAndTable = true;
                         }
-                    } else if(currentStatus == 4) {
 
-                        //On your turn
-                        tableFrag.setupClickEvents();
-                        //FragmentManager fragmentManager = getFragmentManager();
-                        //FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                        //FieldFragment makeField = FieldFragment.newInstance(playedCards);
-                        //fragmentTransaction.replace(R.id.playingArea, makeField, "BIDDING");
-                        //fragmentTransaction.commit();
-                        //setupClickEvents();
+                        if(bids.length() > 0) {
+                            Bid bidRow;
+                            for(int c = 0; c < bids.length(); c++) {
+                                JSONObject bid = bids.getJSONObject(c);
+                                bidRow = new Bid(bid.getInt("userid"), bid.getInt("value"));
+
+                                gameBids.add(bidRow);
+                            }
+
+                            updateScoreBoard(gameBids);
+                        }
+                    } else if(currentStatus == 4) {
+                        loadingArea.setVisibility(View.GONE);
+
+                        JSONArray field = jsonObj.getJSONArray("field");
+                        JSONArray bids = jsonObj.getJSONArray("bids");
+                        JSONArray hand = jsonObj.getJSONArray("hand");
+                        JSONArray users = jsonObj.getJSONArray("users");
+                        JSONObject trumpCard = jsonObj.getJSONObject("trump");
+
+                        //Fill up the users from the JSON
+                        if(!receivedHandAndTable) {
+                            GameUser row;
+                            for(int i = 0; i < users.length(); i++) {
+                                JSONObject user = users.getJSONObject(i);
+                                row = new GameUser(user.getString("email"), user.getInt("id"), user.getInt("gameid"), user.getInt("userid"));
+                                gameUsers.add(row);
+                            }
+
+                            Card cardRow;
+                            for(int j = 0; j < hand.length(); j++) {
+                                JSONObject card = hand.getJSONObject(j);
+                                cardRow = new Card(card.getString("suit"), card.getString("value"));
+                                cardRow.setId(card.getInt("handcardid"));
+
+                                handCards.add(cardRow);
+                            }
+
+                            Card trump = new Card(trumpCard.getString("suit"), trumpCard.getString("value"));
+
+                            insertTable(gameUsers, handCards, trump);
+                            insertField(fieldCards.toArray(new Card[5]));
+                            receivedHandAndTable = true;
+                        }
+
+                        if(bids.length() > 0) {
+                            Bid bidRow;
+                            for(int c = 0; c < bids.length(); c++) {
+                                JSONObject bid = bids.getJSONObject(c);
+                                bidRow = new Bid(bid.getInt("userid"), bid.getInt("value"));
+
+                                gameBids.add(bidRow);
+                            }
+
+                            updateScoreBoard(gameBids);
+                        }
+
+                        if(!holdBidsAndHand) {
+                            if(bids.length() > 0) {
+                                gameBids.clear();
+                                Bid bidRow;
+                                for(int c = 0; c < bids.length(); c++) {
+                                    JSONObject bid = bids.getJSONObject(c);
+                                    bidRow = new Bid(bid.getInt("userid"), bid.getInt("value"));
+
+                                    gameBids.add(bidRow);
+                                }
+
+                                updateScoreBoard(gameBids);
+                            }
+
+                            holdBidsAndHand = true;
+                            tableFrag.setupClickEvents();
+                        }
+
+                        if(jsonObj.getBoolean("yourturn")) {
+                            tableFrag.resetTurn();
+                        }
+
+                        if(field.length() > 0 && receivedHandAndTable) {
+                            fieldCards.clear();
+                            Card c;
+                            for(int q = 0; q < field.length(); q++) {
+                                JSONObject row = field.getJSONObject(q);
+                                c = new Card(row.getString("suit"), row.getString("value"));
+                                c.setId(row.getInt("userid"));
+                                fieldCards.add(c);
+                            }
+
+                            fieldFrag.setPlayField(fieldCards);
+                        }
                     } else if(currentStatus == 5) {
 
                     } else if(currentStatus == 6) {
@@ -182,6 +270,10 @@ public class MainActivity extends AppCompatActivity implements BiddingFragment.O
         unregisterReceiver(receiver);
     }
 
+    private void updateScoreBoard(ArrayList<Bid> bids) {
+        tableFrag.updateScoreBoard(bids);
+    }
+
     private void insertBiddingFrag() {
         FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
@@ -206,21 +298,40 @@ public class MainActivity extends AppCompatActivity implements BiddingFragment.O
         fragmentTransaction.commit();
     }
 
+    private void insertField(Card[] cards) {
+        FragmentManager fragmentManager = getFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+        if(fieldFrag == null) {
+            fieldFrag = FieldFragment.newInstance(cards);
+        }
+
+        fragmentTransaction.replace(R.id.playingArea, fieldFrag, "TABLE");
+        fragmentTransaction.commit();
+    }
+
     @Override
     public void onBidInteraction(int bid) {
         //Do something with the bid
         GameService.getInstance().placeBid(getApplicationContext(), token, bid, new VolleyCallback() {
             @Override
             public void onSuccess(JSONObject result) {
-                FragmentManager fragmentManager = getFragmentManager();
-                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                insertField(new Card[5]);
+            }
 
-                if(fieldFrag == null) {
-                    fieldFrag = FieldFragment.newInstance(new Card[5]);
-                }
+            @Override
+            public void onError(VolleyError string) {
+                string.printStackTrace();
+            }
+        });
+    }
 
-                fragmentTransaction.replace(R.id.playingArea, fieldFrag, "TABLE");
-                fragmentTransaction.commit();
+    @Override
+    public void playedCard(Card played) {
+        GameService.getInstance().playCard(getApplicationContext(), token, played.getId(), new VolleyCallback() {
+            @Override
+            public void onSuccess(JSONObject result) {
+                //Do nothing for now
             }
 
             @Override

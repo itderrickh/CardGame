@@ -11,6 +11,8 @@ import android.widget.ImageView;
 import com.itderrickh.cardgame.helpers.Card;
 import com.itderrickh.cardgame.R;
 
+import java.util.ArrayList;
+
 public class FieldFragment extends Fragment {
 
     private ImageView[] playField;
@@ -19,7 +21,6 @@ public class FieldFragment extends Fragment {
         // Required empty public constructor
     }
 
-    // TODO: Rename and change types and number of parameters
     public static FieldFragment newInstance(Card[] cards) {
         FieldFragment fragment = new FieldFragment();
         Bundle args = new Bundle();
@@ -54,11 +55,19 @@ public class FieldFragment extends Fragment {
         this.playField[3] = (ImageView) getView().findViewById(R.id.playCard4);
         this.playField[4] = (ImageView) getView().findViewById(R.id.playCard5);
 
+        setField();
+    }
+
+    public void setPlayField(ArrayList<Card> cards) {
+        playedCards = cards.toArray(new Card[5]);
+        setField();
+    }
+
+    private void setField() {
         for(int d = 0; d < this.playedCards.length; d++) {
             if(this.playedCards[d] != null) {
                 this.playField[d].setImageResource(this.playedCards[d].getResourceImage());
             } else {
-                //this.playField[d].setImageResource(R.drawable.cardback);
                 this.playField[d].setImageBitmap(null);
             }
         }
