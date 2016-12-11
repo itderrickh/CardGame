@@ -23,26 +23,23 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 public class TableFragment extends Fragment implements Serializable {
-    //Playfield
-    private Card[] playedCards;
     //Hand
     private ImageView[] handLocs;
+    public ArrayList<Card> hand;
+
     //Trump card
     private ImageView trumpCardImage;
     private Card trumpCard;
 
-    private TextView[] usernameFields;
+    //Scoreboard
     private TextView[] bidFields;
-
+    private TextView[] usernameFields;
+    public ArrayList<GameUser> users;
 
     private int lastClickedCard = -1;
     private int cardPlayed = 0;
-    public int bid = 0;
     public String username;
-    public ArrayList<GameUser> users;
-    public ArrayList<Card> hand;
     private boolean turnOver = true;
-
     private OnCardPlayedHandler listener;
 
     public TableFragment() { }
@@ -122,8 +119,13 @@ public class TableFragment extends Fragment implements Serializable {
         super.onActivityCreated(savedInstanceState);
 
         if(savedInstanceState != null) {
-            this.playedCards = (Card[])savedInstanceState.getSerializable("playedCards");
-            this.cardPlayed = savedInstanceState.getInt("cardPlayed");
+            hand = (ArrayList<Card>) savedInstanceState.getSerializable("hand");
+            trumpCard = (Card) savedInstanceState.getSerializable("trumpCard");
+            users = (ArrayList<GameUser>) savedInstanceState.getSerializable("users");
+            lastClickedCard = savedInstanceState.getInt("lastClickedCard");
+            cardPlayed = savedInstanceState.getInt("cardPlayed");
+            username = savedInstanceState.getString("username");
+            turnOver = savedInstanceState.getBoolean("turnOver");
         }
     }
 
@@ -131,7 +133,12 @@ public class TableFragment extends Fragment implements Serializable {
         for(int y = 0; y < users.size(); y++) {
             GameUser u = users.get(y);
             String email = u.getEmail();
-            usernameFields[y].setText(email.substring(0, email.indexOf("@")));
+
+            if(email.contains("@")) {
+                usernameFields[y].setText(email.substring(0, email.indexOf("@")));
+            } else {
+                usernameFields[y].setText(email);
+            }
 
             for(int x = 0; x < bids.size(); x++) {
                 if(u.getUserid() == bids.get(x).getUserid()) {
@@ -145,17 +152,13 @@ public class TableFragment extends Fragment implements Serializable {
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
-        //Save the state of the game here, in the future labs we will actually use this
-        outState.putSerializable("trumpCard", this.trumpCard);
-        outState.putSerializable("hand", this.hand);
-        outState.putSerializable("playedCards", this.playedCards);
-        outState.putInt("cardPlayed", this.cardPlayed);
-        outState.putString("username", this.username);
-    }
-
-    public void updateBid() {
-        TextView bidArea = (TextView) getView().findViewById(R.id.bid1);
-        bidArea.setText(bid + "");
+        outState.putSerializable("hand", hand);
+        outState.putSerializable("trumpCard", trumpCard);
+        outState.putSerializable("users", users);
+        outState.putInt("lastClickedCard", lastClickedCard);
+        outState.putInt("cardPlayed", cardPlayed);
+        outState.putString("username", username);
+        outState.putBoolean("turnOver", turnOver);
     }
 
     public void resetTurn() {
