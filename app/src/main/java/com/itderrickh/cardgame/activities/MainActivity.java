@@ -261,6 +261,7 @@ public class MainActivity extends AppCompatActivity implements BiddingFragment.O
                         }
                     } else if(currentStatus == 5) {
                         //Wait until this step is over to see scores
+                        System.out.println(currentStatus);
                     } else if(currentStatus == 6) {
                         final boolean winner = jsonObj.getBoolean("isWinner");
 
