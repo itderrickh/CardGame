@@ -30,6 +30,7 @@ import com.itderrickh.cardgame.helpers.Bid;
 import com.itderrickh.cardgame.helpers.Card;
 import com.itderrickh.cardgame.helpers.GameUser;
 import com.itderrickh.cardgame.helpers.Message;
+import com.itderrickh.cardgame.helpers.Score;
 import com.itderrickh.cardgame.helpers.VolleyCallback;
 import com.itderrickh.cardgame.services.GameRunnerService;
 import com.itderrickh.cardgame.services.GameService;
@@ -63,6 +64,7 @@ public class MainActivity extends AppCompatActivity implements BiddingFragment.O
     private ArrayList<Card> handCards;
     private ArrayList<Bid> gameBids;
     private ArrayList<Card> fieldCards;
+    private ArrayList<Score> scores;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,6 +92,7 @@ public class MainActivity extends AppCompatActivity implements BiddingFragment.O
         handCards = new ArrayList<Card>();
         gameBids = new ArrayList<Bid>();
         fieldCards = new ArrayList<Card>();
+        scores = new ArrayList<Score>();
 
         this.sendMessage = (Button) findViewById(R.id.sendMessage);
         this.messages = (ListView) findViewById(R.id.messagesList);
@@ -120,6 +123,7 @@ public class MainActivity extends AppCompatActivity implements BiddingFragment.O
                         JSONArray hand = jsonObj.getJSONArray("hand");
                         JSONArray users = jsonObj.getJSONArray("users");
                         JSONObject trumpCard = jsonObj.getJSONObject("trump");
+                        JSONArray scoresJson = jsonObj.getJSONArray("scores");
 
                         //Fill up the users from the JSON
                         if(!receivedHandAndTable) {
@@ -156,7 +160,15 @@ public class MainActivity extends AppCompatActivity implements BiddingFragment.O
                                 gameBids.add(bidRow);
                             }
 
-                            updateScoreBoard(gameBids);
+                            Score scoreRow;
+                            for(int d = 0; d < scoresJson.length(); d++) {
+                                JSONObject score = scoresJson.getJSONObject(d);
+                                scoreRow = new Score(score.getInt("userid"), score.getInt("score"));
+
+                                scores.add(scoreRow);
+                            }
+
+                            updateScoreBoard(gameBids, scores);
                         }
                     } else if(currentStatus == 4) {
                         loadingArea.setVisibility(View.GONE);
@@ -166,6 +178,7 @@ public class MainActivity extends AppCompatActivity implements BiddingFragment.O
                         JSONArray hand = jsonObj.getJSONArray("hand");
                         JSONArray users = jsonObj.getJSONArray("users");
                         JSONObject trumpCard = jsonObj.getJSONObject("trump");
+                        JSONArray scoresJson = jsonObj.getJSONArray("scores");
 
                         //Fill up the users from the JSON
                         if(!receivedHandAndTable) {
@@ -201,7 +214,15 @@ public class MainActivity extends AppCompatActivity implements BiddingFragment.O
                                 gameBids.add(bidRow);
                             }
 
-                            updateScoreBoard(gameBids);
+                            Score scoreRow;
+                            for(int d = 0; d < scoresJson.length(); d++) {
+                                JSONObject score = scoresJson.getJSONObject(d);
+                                scoreRow = new Score(score.getInt("userid"), score.getInt("score"));
+
+                                scores.add(scoreRow);
+                            }
+
+                            updateScoreBoard(gameBids, scores);
                         }
 
                         if(!holdBidsAndHand) {
@@ -215,7 +236,7 @@ public class MainActivity extends AppCompatActivity implements BiddingFragment.O
                                     gameBids.add(bidRow);
                                 }
 
-                                updateScoreBoard(gameBids);
+                                updateScoreBoard(gameBids, scores);
                             }
 
                             holdBidsAndHand = true;
@@ -239,9 +260,19 @@ public class MainActivity extends AppCompatActivity implements BiddingFragment.O
                             fieldFrag.setPlayField(fieldCards);
                         }
                     } else if(currentStatus == 5) {
-
+                        //Wait until this step is over to see scores
                     } else if(currentStatus == 6) {
+                        final boolean winner = jsonObj.getBoolean("isWinner");
 
+                        //Go to the end game page
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Intent i = new Intent(getApplicationContext(), GameOverActivity.class);
+                                i.putExtra("isWinner", winner);
+                                startActivity(i);
+                            }
+                        });
                     }
                 } catch (Exception ex) {
                     //Handle exception here
@@ -270,8 +301,8 @@ public class MainActivity extends AppCompatActivity implements BiddingFragment.O
         unregisterReceiver(receiver);
     }
 
-    private void updateScoreBoard(ArrayList<Bid> bids) {
-        tableFrag.updateScoreBoard(bids);
+    private void updateScoreBoard(ArrayList<Bid> bids, ArrayList<Score> scores) {
+        tableFrag.updateScoreBoard(bids, scores);
     }
 
     private void insertBiddingFrag() {

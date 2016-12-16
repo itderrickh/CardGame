@@ -18,6 +18,7 @@ import com.itderrickh.cardgame.helpers.Card;
 import com.itderrickh.cardgame.activities.MainActivity;
 import com.itderrickh.cardgame.R;
 import com.itderrickh.cardgame.helpers.GameUser;
+import com.itderrickh.cardgame.helpers.Score;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -33,6 +34,7 @@ public class TableFragment extends Fragment implements Serializable {
 
     //Scoreboard
     private TextView[] bidFields;
+    private TextView[] scoreFields;
     private TextView[] usernameFields;
     public ArrayList<GameUser> users;
 
@@ -88,6 +90,13 @@ public class TableFragment extends Fragment implements Serializable {
         bidFields[3] = (TextView) getView().findViewById(R.id.bid4);
         bidFields[4] = (TextView) getView().findViewById(R.id.bid5);
 
+        scoreFields = new TextView[5];
+        scoreFields[0] = (TextView) getView().findViewById(R.id.total1);
+        scoreFields[1] = (TextView) getView().findViewById(R.id.total2);
+        scoreFields[2] = (TextView) getView().findViewById(R.id.total3);
+        scoreFields[3] = (TextView) getView().findViewById(R.id.total4);
+        scoreFields[4] = (TextView) getView().findViewById(R.id.total5);
+
         for(int i = 0; i < usernameFields.length; i++) {
             String email = users.get(i).getEmail();
             usernameFields[i].setText(email.substring(0, email.indexOf("@")));
@@ -129,7 +138,7 @@ public class TableFragment extends Fragment implements Serializable {
         }
     }
 
-    public void updateScoreBoard(ArrayList<Bid> bids) {
+    public void updateScoreBoard(ArrayList<Bid> bids, ArrayList<Score> scores) {
         for(int y = 0; y < users.size(); y++) {
             GameUser u = users.get(y);
             String email = u.getEmail();
@@ -143,6 +152,12 @@ public class TableFragment extends Fragment implements Serializable {
             for(int x = 0; x < bids.size(); x++) {
                 if(u.getUserid() == bids.get(x).getUserid()) {
                     bidFields[y].setText(bids.get(x).getValue() + "");
+                }
+            }
+
+            for(int x = 0; x < scores.size(); x++) {
+                if(u.getUserid() == scores.get(x).getUserid()) {
+                    scoreFields[y].setText(scores.get(x).getScore() + "");
                 }
             }
         }
