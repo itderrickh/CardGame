@@ -92,6 +92,7 @@ public class MainActivity extends AppCompatActivity implements BiddingFragment.O
         fieldCards = new ArrayList<Card>();
         scores = new ArrayList<Score>();
         messagesArray = new ArrayList<Message>();
+        trickNumber = 1;
 
         this.sendMessage = (Button) findViewById(R.id.sendMessage);
         this.messages = (ListView) findViewById(R.id.messagesList);

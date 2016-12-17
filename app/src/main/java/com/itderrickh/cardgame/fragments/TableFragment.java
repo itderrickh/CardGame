@@ -125,7 +125,9 @@ public class TableFragment extends Fragment implements Serializable {
         handLocs[9] = (ImageView) getView().findViewById(R.id.card10);
 
         for(int z = 0; z < hand.size(); z++) {
-            handLocs[z].setImageResource(hand.get(z).getResourceImage());
+            if(hand.get(z) != null) {
+                handLocs[z].setImageResource(hand.get(z).getResourceImage());
+            }
         }
 
         for(int h = hand.size(); h < handLocs.length; h++) {
