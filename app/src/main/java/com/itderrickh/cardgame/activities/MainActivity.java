@@ -10,16 +10,14 @@ import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.VolleyError;
 import com.itderrickh.cardgame.R;
@@ -30,6 +28,7 @@ import com.itderrickh.cardgame.helpers.Bid;
 import com.itderrickh.cardgame.helpers.Card;
 import com.itderrickh.cardgame.helpers.GameUser;
 import com.itderrickh.cardgame.helpers.Message;
+import com.itderrickh.cardgame.helpers.MessageAdapter;
 import com.itderrickh.cardgame.helpers.Score;
 import com.itderrickh.cardgame.helpers.VolleyCallback;
 import com.itderrickh.cardgame.services.GameRunnerService;
@@ -50,13 +49,14 @@ public class MainActivity extends AppCompatActivity implements BiddingFragment.O
     private RelativeLayout loadingArea;
 
     public String email;
-    public ArrayList<Message> messagesArray = new ArrayList<>();
-    public BiddingFragment bidFrag;
-    public TableFragment tableFrag;
-    public FieldFragment fieldFrag;
+    public ArrayList<Message> messagesArray;
+    private BiddingFragment bidFrag;
+    private TableFragment tableFrag;
+    private FieldFragment fieldFrag;
     BroadcastReceiver receiver;
     private boolean receivedHandAndTable = false;
     private boolean holdBidsAndHand = false;
+    private int trickNumber = 1;
 
     private String token;
 
@@ -73,14 +73,12 @@ public class MainActivity extends AppCompatActivity implements BiddingFragment.O
         SharedPreferences preferences = getSharedPreferences("CARDGAME_SETTINGS", Context.MODE_PRIVATE);
         token = preferences.getString("Auth_Token", "");
 
-        email = getIntent().getStringExtra("email");
+        email = preferences.getString("Email", "");
 
         if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
             setContentView(R.layout.activity_main_landscape);
             getSupportActionBar().hide();
-
-            this.messageAdapter = new MessageAdapter(this, R.layout.messages_row, messagesArray);
-            this.messages.setAdapter(this.messageAdapter);
+            sendMessage = (Button) findViewById(R.id.sendMessage);
         } else {
             setContentView(R.layout.activity_main);
         }
@@ -93,15 +91,40 @@ public class MainActivity extends AppCompatActivity implements BiddingFragment.O
         gameBids = new ArrayList<Bid>();
         fieldCards = new ArrayList<Card>();
         scores = new ArrayList<Score>();
+        messagesArray = new ArrayList<Message>();
 
         this.sendMessage = (Button) findViewById(R.id.sendMessage);
         this.messages = (ListView) findViewById(R.id.messagesList);
         this.messageText = (EditText) findViewById(R.id.editText);
 
+        if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            this.messageAdapter = new MessageAdapter(this, R.layout.messages_row, messagesArray);
+            this.messages.setAdapter(this.messageAdapter);
+            this.sendMessage.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    GameService.getInstance().sendMessage(getApplicationContext(), token, messageText.getText().toString(), new VolleyCallback() {
+                        @Override
+                        public void onSuccess(JSONObject result) {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    messageText.setText("");
+                                }
+                            });
+                        }
+
+                        @Override
+                        public void onError(VolleyError string) {
+                            //Nothing
+                        }
+                    });
+                }
+            });
+        }
+
         if(savedInstanceState != null) {
             messagesArray = (ArrayList<Message>)savedInstanceState.getSerializable("messagesArray");
-            bidFrag = (BiddingFragment)savedInstanceState.getSerializable("bidFrag");
-            tableFrag = (TableFragment) savedInstanceState.getSerializable("tableFrag");
         }
 
         //Handle updates from the score service
@@ -111,6 +134,36 @@ public class MainActivity extends AppCompatActivity implements BiddingFragment.O
                 try {
                     JSONObject jsonObj = new JSONObject(intent.getStringExtra("data"));
                     int currentStatus = jsonObj.getInt("status");
+                    if(trickNumber != jsonObj.getInt("tricknumber")) {
+                        trickNumber = jsonObj.getInt("tricknumber");
+                        receivedHandAndTable = false;
+                        holdBidsAndHand = false;
+                        gameUsers = new ArrayList<GameUser>();
+                        handCards = new ArrayList<Card>();
+                        gameBids = new ArrayList<Bid>();
+                        fieldCards = new ArrayList<Card>();
+                        scores = new ArrayList<Score>();
+                    }
+
+                    if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                        messagesArray = new ArrayList<>();
+                        JSONArray messagesJson = jsonObj.getJSONArray("messages");
+                        Message messageRow;
+                        for(int e = 0; e < messagesJson.length(); e++) {
+                            JSONObject message = messagesJson.getJSONObject(e);
+                            messageRow = new Message(message.getInt("userid"), message.getString("username"), message.getString("message"));
+
+                            messagesArray.add(messageRow);
+                        }
+
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                messageAdapter = new MessageAdapter(getApplicationContext(), R.layout.messages_row, messagesArray);
+                                messages.setAdapter(messageAdapter);
+                            }
+                        });
+                    }
 
                     if (currentStatus == 1) {
                         loadingText.setText("Waiting for users");
@@ -146,30 +199,38 @@ public class MainActivity extends AppCompatActivity implements BiddingFragment.O
                             Card trump = new Card(trumpCard.getString("suit"), trumpCard.getString("value"));
 
                             insertTable(gameUsers, handCards, trump);
-                            insertBiddingFrag();
 
                             receivedHandAndTable = true;
                         }
 
-                        if(bids.length() > 0) {
-                            Bid bidRow;
-                            for(int c = 0; c < bids.length(); c++) {
-                                JSONObject bid = bids.getJSONObject(c);
-                                bidRow = new Bid(bid.getInt("userid"), bid.getInt("value"));
+                        boolean alreadyBid = false;
+                        Bid bidRow;
+                        for(int c = 0; c < bids.length(); c++) {
+                            JSONObject bid = bids.getJSONObject(c);
+                            bidRow = new Bid(bid.getInt("userid"), bid.getInt("value"));
 
-                                gameBids.add(bidRow);
+                            if(email.equals(bid.getString("email"))) {
+                                alreadyBid = true;
                             }
 
-                            Score scoreRow;
-                            for(int d = 0; d < scoresJson.length(); d++) {
-                                JSONObject score = scoresJson.getJSONObject(d);
-                                scoreRow = new Score(score.getInt("userid"), score.getInt("score"));
-
-                                scores.add(scoreRow);
-                            }
-
-                            updateScoreBoard(gameBids, scores);
+                            gameBids.add(bidRow);
                         }
+
+                        updateScoreBoard(gameBids, scores);
+
+                        if(!alreadyBid) {
+                            insertBiddingFrag();
+                        }
+
+                        Score scoreRow;
+                        for(int d = 0; d < scoresJson.length(); d++) {
+                            JSONObject score = scoresJson.getJSONObject(d);
+                            scoreRow = new Score(score.getInt("userid"), score.getInt("score"));
+
+                            scores.add(scoreRow);
+                        }
+
+                        updateScoreBoard(gameBids, scores);
                     } else if(currentStatus == 4) {
                         loadingArea.setVisibility(View.GONE);
 
@@ -244,6 +305,7 @@ public class MainActivity extends AppCompatActivity implements BiddingFragment.O
                         }
 
                         if(jsonObj.getBoolean("yourturn")) {
+                            Toast.makeText(getApplicationContext(), "Your turn", Toast.LENGTH_SHORT).show();
                             tableFrag.resetTurn();
                         }
 
@@ -324,6 +386,7 @@ public class MainActivity extends AppCompatActivity implements BiddingFragment.O
 
         if(tableFrag == null) {
             tableFrag = TableFragment.newInstance(users, cards, trumpCard);
+
         }
 
         fragmentTransaction.replace(R.id.tableArea, tableFrag, "TABLE");
@@ -378,28 +441,5 @@ public class MainActivity extends AppCompatActivity implements BiddingFragment.O
         super.onSaveInstanceState(outState);
 
         outState.putSerializable("messagesArray", messagesArray);
-        outState.putSerializable("bidFrag", bidFrag);
-        outState.putSerializable("tableFrag", tableFrag);
-    }
-
-    public class MessageAdapter extends ArrayAdapter<Message> {
-        public MessageAdapter(Context context, int resource, ArrayList<Message> objects) {
-            super(context, resource, objects);
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            Message message = getItem(position);
-            if (convertView == null) {
-                convertView = LayoutInflater.from(getContext()).inflate(R.layout.messages_row, parent, false);
-            }
-
-            TextView messageUser = (TextView) convertView.findViewById(R.id.messageUser);
-            TextView messageText = (TextView) convertView.findViewById(R.id.messageText);
-
-            messageUser.setText(message.getUsername());
-            messageText.setText(message.getMessage());
-            return convertView;
-        }
     }
 }

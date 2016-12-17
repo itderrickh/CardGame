@@ -1,6 +1,8 @@
 package com.itderrickh.cardgame.helpers;
 
-public class GameUser {
+import java.io.Serializable;
+
+public class GameUser implements Serializable {
     private String email;
     private int id;
     private int gameid;

@@ -26,7 +26,7 @@ import java.util.ArrayList;
 public class TableFragment extends Fragment implements Serializable {
     //Hand
     private ImageView[] handLocs;
-    public ArrayList<Card> hand;
+    private ArrayList<Card> hand;
 
     //Trump card
     private ImageView trumpCardImage;
@@ -36,7 +36,7 @@ public class TableFragment extends Fragment implements Serializable {
     private TextView[] bidFields;
     private TextView[] scoreFields;
     private TextView[] usernameFields;
-    public ArrayList<GameUser> users;
+    private ArrayList<GameUser> users;
 
     private int lastClickedCard = -1;
     private int cardPlayed = 0;
@@ -50,9 +50,9 @@ public class TableFragment extends Fragment implements Serializable {
         TableFragment fragment = new TableFragment();
         Bundle args = new Bundle();
 
-        fragment.users = gameUsers;
-        fragment.hand = handCards;
-        fragment.trumpCard = trumpCard;
+        args.putSerializable("trumpCard", trumpCard);
+        args.putSerializable("users", gameUsers);
+        args.putSerializable("hand", handCards);
         fragment.setArguments(args);
         return fragment;
     }
@@ -60,14 +60,23 @@ public class TableFragment extends Fragment implements Serializable {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if(getArguments() != null) {
+            this.users = (ArrayList<GameUser>)getArguments().getSerializable("users");
+            this.hand = (ArrayList<Card>)getArguments().getSerializable("hand");
+            this.trumpCard = (Card)getArguments().getSerializable("trumpCard");
+        }
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_table, container, false);
-        return view;
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
+        return inflater.inflate(R.layout.fragment_table, container, false);
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
     }
 
     @Override
@@ -97,10 +106,11 @@ public class TableFragment extends Fragment implements Serializable {
         scoreFields[3] = (TextView) getView().findViewById(R.id.total4);
         scoreFields[4] = (TextView) getView().findViewById(R.id.total5);
 
-        for(int i = 0; i < usernameFields.length; i++) {
+        for(int i = 0; i < users.size(); i++) {
             String email = users.get(i).getEmail();
             usernameFields[i].setText(email.substring(0, email.indexOf("@")));
         }
+
 
         handLocs = new ImageView[10];
         handLocs[0] = (ImageView) getView().findViewById(R.id.card1);
@@ -118,24 +128,14 @@ public class TableFragment extends Fragment implements Serializable {
             handLocs[z].setImageResource(hand.get(z).getResourceImage());
         }
 
+        for(int h = hand.size(); h < handLocs.length; h++) {
+            handLocs[h].setBackgroundColor(Color.TRANSPARENT);
+            hand.add(null);
+        }
+
         trumpCardImage = (ImageView) getView().findViewById(R.id.trumpCard);
 
         trumpCardImage.setImageResource(trumpCard.getResourceImage());
-    }
-
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-
-        if(savedInstanceState != null) {
-            hand = (ArrayList<Card>) savedInstanceState.getSerializable("hand");
-            trumpCard = (Card) savedInstanceState.getSerializable("trumpCard");
-            users = (ArrayList<GameUser>) savedInstanceState.getSerializable("users");
-            lastClickedCard = savedInstanceState.getInt("lastClickedCard");
-            cardPlayed = savedInstanceState.getInt("cardPlayed");
-            username = savedInstanceState.getString("username");
-            turnOver = savedInstanceState.getBoolean("turnOver");
-        }
     }
 
     public void updateScoreBoard(ArrayList<Bid> bids, ArrayList<Score> scores) {
@@ -147,6 +147,12 @@ public class TableFragment extends Fragment implements Serializable {
                 usernameFields[y].setText(email.substring(0, email.indexOf("@")));
             } else {
                 usernameFields[y].setText(email);
+            }
+
+            if(bids.size() == 0) {
+                for(int x = 0; x < 5; x++) {
+                    bidFields[y].setText(0 + "");
+                }
             }
 
             for(int x = 0; x < bids.size(); x++) {
@@ -161,19 +167,6 @@ public class TableFragment extends Fragment implements Serializable {
                 }
             }
         }
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-
-        outState.putSerializable("hand", hand);
-        outState.putSerializable("trumpCard", trumpCard);
-        outState.putSerializable("users", users);
-        outState.putInt("lastClickedCard", lastClickedCard);
-        outState.putInt("cardPlayed", cardPlayed);
-        outState.putString("username", username);
-        outState.putBoolean("turnOver", turnOver);
     }
 
     public void resetTurn() {

@@ -20,6 +20,7 @@ public class GameService {
     private static String SERVICE_URL = "http://webdev.cs.uwosh.edu/students/heined50/CardsBackend/service.php";
     private static String BID_URL = "http://webdev.cs.uwosh.edu/students/heined50/CardsBackend/placeBid.php";
     private static String PLAY_CARD_URL = "http://webdev.cs.uwosh.edu/students/heined50/CardsBackend/playCard.php";
+    private static String SEND_MESSAGE_URL = "http://webdev.cs.uwosh.edu/students/heined50/CardsBackend/sendMessage.php";
     private static GameService me;
     public GameService() {}
 
@@ -29,6 +30,40 @@ public class GameService {
         }
 
         return me;
+    }
+
+    public void sendMessage(Context context, final String token, final String text, final VolleyCallback callback) {
+        JSONObject jsonBuilder = new JSONObject();
+        try {
+            jsonBuilder.put("message", text);
+        } catch (Exception ex) { }
+
+        RequestQueue requestQueue = Volley.newRequestQueue(context);
+        JsonObjectRequest jsObjRequest = new JsonObjectRequest
+                (Request.Method.POST, SEND_MESSAGE_URL, jsonBuilder, new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        callback.onSuccess(response);
+                    }
+                }, new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        callback.onError(error);
+                    }
+                }){
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String,String> params = super.getHeaders();
+                if(params == null || params.isEmpty()) {
+                    params = new HashMap<>();
+                }
+
+                params.put("Authorize", token);
+                return params;
+            }
+        };
+
+        requestQueue.add(jsObjRequest);
     }
 
     public void placeBid(Context context, final String token, int bid, final VolleyCallback callback) {

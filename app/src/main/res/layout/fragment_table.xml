@@ -3,6 +3,7 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:id="@+id/tableFragment"
     tools:context="com.itderrickh.cardgame.fragments.TableFragment">
     <ImageView
         android:layout_width="match_parent"

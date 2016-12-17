@@ -4,16 +4,18 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:weightSum="12">
-    <fragment class="com.itderrickh.cardgame.fragments.TableFragment"
-        android:id="@+id/tables_fragment"
+
+    <LinearLayout
         android:layout_width="fill_parent"
         android:layout_height="match_parent"
-        tools:layout="@layout/fragment_table"
-        android:layout_weight="11"/>
+        android:orientation="horizontal"
+        android:layout_weight="11"
+        android:id="@+id/tableArea">
+    </LinearLayout>
 
     <RelativeLayout
         android:layout_width="200dp"
-        android:layout_alignRight="@id/tables_fragment"
+        android:layout_alignRight="@id/tableArea"
         android:layout_height="match_parent"
         android:layout_weight="1">
         <EditText
@@ -42,5 +44,27 @@
             android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true"
             android:layout_above="@+id/editText" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:id="@+id/loadingView">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#000000"
+            android:textSize="24dp"
+            android:text="Waiting for users"
+            android:id="@+id/loadingText" />
+        <ProgressBar
+            style="?android:attr/progressBarStyleLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/loadingText"
+            android:id="@+id/isJoined"
+            android:layout_centerVertical="true"
+            android:layout_centerHorizontal="true" />
     </RelativeLayout>
 </LinearLayout>
