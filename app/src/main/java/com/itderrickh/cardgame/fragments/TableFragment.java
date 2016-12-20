@@ -108,7 +108,12 @@ public class TableFragment extends Fragment implements Serializable {
 
         for(int i = 0; i < users.size(); i++) {
             String email = users.get(i).getEmail();
-            usernameFields[i].setText(email.substring(0, email.indexOf("@")));
+
+            if(email.contains("@")) {
+                usernameFields[i].setText(email.substring(0, email.indexOf("@")));
+            } else {
+                usernameFields[i].setText(email);
+            }
         }
 
 
